@@ -6,7 +6,8 @@
     "build": "webpack --mode=production",
     "dev": "webpack serve --mode=development"
   },
-  "main": "src/index.js",
+  "main": "dist/VisionPhotoGallery.js",
+  "module": "src/index.js",
   "private": true,
   "repository": {
     "type": "git",

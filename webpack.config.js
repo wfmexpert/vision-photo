@@ -13,25 +13,36 @@ module.exports = {
         port: 3003,
     },
     devtool: 'inline-source-map',
+    watch: true,
     watchOptions: {
         ignored: /node_modules/,
+    },
+    output: {
+        filename: 'VisionPhotoGallery.js',
+        path: path.resolve(__dirname, 'dist'),
+        library: 'VisionPhotoGallery',
+        libraryTarget: 'var',
+        libraryExport: 'default',
+        globalObject: 'this',
     },
     plugins: [
         new CleanWebpackPlugin({
             cleanStaleWebpackAssets: false,
         }),
         new HTMLWebpackPlugin({
-            title: 'Vision Photo Gallery',
             inject: 'body',
+            templateContent: `
+                <html>
+                    <head>
+                        <title>Vision Photo Gallery</title>
+                    </head>
+                    <body>
+                        <div id="app"></div>
+                    </body>
+                </html>
+            `,
         }),
     ],
-    output: {
-        filename: 'vision-photo-gallery.js',
-        path: path.resolve(__dirname, 'dist'),
-        library: 'VisionPhotoGallery',
-        libraryExport: 'umd',
-        publicPath: '/',
-    },
     module: {
         rules: [
             {
