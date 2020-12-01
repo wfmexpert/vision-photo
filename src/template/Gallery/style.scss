@@ -1,0 +1,31 @@
+.vision-photo-gallery {
+  box-sizing: border-box;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-around;
+  height: inherit;
+  min-height: 220px;
+  width: 100%;
+  overflow: hidden;
+
+  &__item {
+    flex: 1 1 auto;
+    padding: 20px;
+
+    &--main-photo {
+      flex: 0 0 200px;
+    }
+
+    &:first-child {
+      border-right: 1px solid #E9E9E9;
+    }
+  }
+
+  &__title {
+    font: normal 14px/16px Roboto, sans-serif;
+    margin: 0 0 10px;
+    padding: 0;
+    width: auto;
+    color: #545266;
+  }
+}
