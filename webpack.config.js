@@ -54,7 +54,23 @@ module.exports = {
                         presets: ['@babel/preset-env']
                     }
                 }
-            }
+            },
+            {
+                test: /\.s[ac]ss$/i,
+                use: [
+                    "style-loader",
+                    "css-loader",
+                    "sass-loader",
+                ],
+            },
         ]
     },
+    resolve: {
+        alias: {
+            Gallery: path.resolve(__dirname, 'src/template/Gallery/'),
+            MainPhoto: path.resolve(__dirname, 'src/template/MainPhoto/'),
+            Photo: path.resolve(__dirname, 'src/template/Photo/'),
+            Utils: path.resolve(__dirname, 'src/template/Utils/'),
+        },
+    }
 };
