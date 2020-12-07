@@ -3,28 +3,25 @@
 import './style.scss';
 
 /**
- * Шаблон галереи
+ * Шаблон галереи.
  */
-export default class Gallery {
-    constructor(parentElement) {
-        if (parentElement) {
-            parentElement.innerHTML = this.template();
-        }
+const galleryTemplate = {
+    /**
+     * Инициализация и создание шаблона галереи.
+     *
+     * @param rootElement {Element} Целевой родительский DOM элемент.
+     * @param emptyMainPhoto {string} HTML в виде строки.
+     */
+    init: ({rootElement, emptyMainPhoto}) =>  {
+        emptyMainPhoto = !!emptyMainPhoto ? emptyMainPhoto : '';
 
-        return {
-            mainPhoto: parentElement.querySelector('.main-photo'),
-            imagesList: parentElement.querySelector('.gallery'),
-        };
-    }
-
-    template = () =>  {
-        return `
+        rootElement.innerHTML = `
             <div class="vision-photo-gallery">
-                <div class="vision-photo-gallery__item vision-photo-gallery__item--main-photo">
+                <div class="vision-photo-gallery__item main-photo-column">
                     <h4 class="vision-photo-gallery__title">Основная фотография</h4>
-                    <div class="main-photo"></div>
+                    <div class="main-photo">${emptyMainPhoto}</div>
                 </div>    
-                <div class="vision-photo-gallery__item">
+                <div class="vision-photo-gallery__item hidden gallery-column">
                     <h4 class="vision-photo-gallery__title">Галерея</h4>
                     <div class="gallery"></div>
                 </div>    
@@ -32,3 +29,5 @@ export default class Gallery {
         `;
     }
 }
+
+export default galleryTemplate;

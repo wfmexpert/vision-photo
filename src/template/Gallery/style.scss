@@ -2,7 +2,7 @@
   box-sizing: border-box;
   display: flex;
   flex-flow: row nowrap;
-  justify-content: space-around;
+  justify-content: flex-start;
   height: inherit;
   min-height: 220px;
   width: 100%;
@@ -12,12 +12,12 @@
     flex: 1 1 auto;
     padding: 20px;
 
-    &--main-photo {
+    &.main-photo-column {
       flex: 0 0 200px;
     }
 
-    &:first-child {
-      border-right: 1px solid #E9E9E9;
+    &:last-child {
+      border-left: 1px solid #E9E9E9;
     }
   }
 
@@ -27,5 +27,9 @@
     padding: 0;
     width: auto;
     color: #545266;
+  }
+
+  .hidden {
+    display: none;
   }
 }

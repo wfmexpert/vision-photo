@@ -1,4 +1,3 @@
-
 .gallery {
   display: flex;
   flex-flow: row wrap;
@@ -46,3 +45,52 @@
   }
 }
 
+.main-photo {
+  position: relative;
+
+  .btn[data-action="upload"] {
+    display: inline;
+  }
+
+  & > .photo {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+    align-content: flex-end;
+    background-size: cover;
+    height: 180px;
+    width: 160px;
+    border-radius: 2px;
+    position: relative;
+
+    &--empty {
+      background-color: #efefef;
+      align-content: center;
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.15);
+      display: none;
+    }
+
+    &:hover::before {
+      display: block;
+    }
+
+    &:hover .btn {
+      display: inline-block;
+    }
+  }
+}
+
+.btn-file-upload {
+  display: none;
+}
