@@ -8,7 +8,7 @@
     "test": "exit 0"
   },
   "type": "module",
-  "main": "VisionPhotoGallery/index.mjs",
+  "main": "./VisionPhotoGallery/index.js",
   "module": "VisionPhotoGallery",
   "private": false,
   "repository": {
