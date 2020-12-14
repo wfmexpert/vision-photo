@@ -6,8 +6,8 @@
     "build": "webpack --mode=production",
     "dev": "webpack serve --mode=development"
   },
-  "main": "VisionPhotoGallery",
-  "module": "VisionPhotoGallery",
+  "main": "VisionPhotoGallery.js",
+  "module": "VisionPhotoGallery.js",
   "private": true,
   "repository": {
     "type": "git",

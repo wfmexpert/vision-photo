@@ -22,7 +22,7 @@ module.exports = {
         filename: 'VisionPhotoGallery.js',
         path: path.resolve(__dirname, 'dist'),
         library: 'VisionPhotoGallery',
-        libraryTarget: 'umd',
+        libraryTarget: 'commonjs',
         libraryExport: 'default',
         globalObject: 'this',
     },
