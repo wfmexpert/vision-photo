@@ -1,6 +1,6 @@
 {
   "name": "@wfmexpert/vision-photo",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Проект VISION, интерфейс для работы с профилем физ.лица",
   "scripts": {
     "test": "exit 0"
