@@ -6,8 +6,8 @@
     "build": "webpack --mode=production",
     "dev": "webpack serve --mode=development"
   },
-  "main": "dist/VisionPhotoGallery.js",
-  "module": "src/index.js",
+  "main": "VisionPhotoGallery",
+  "module": "VisionPhotoGallery",
   "private": true,
   "repository": {
     "type": "git",
@@ -16,6 +16,14 @@
   "keywords": [],
   "author": "Rustem Nasyrov",
   "license": "UNLICENSED",
+  "browserslist": [
+    "defaults",
+    "ie >= 11",
+    "last 2 versions",
+    "> 0.5%",
+    "iOS 7",
+    "last 3 iOS versions"
+  ],
   "bugs": {
     "url": "https://github.com/wfmexpert/vision-photo/issues"
   },
@@ -23,10 +31,14 @@
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@babel/preset-env": "^7.12.7",
+    "autoprefixer": "^10.1.0",
     "babel-loader": "^8.2.1",
     "clean-webpack-plugin": "^3.0.0",
     "css-loader": "^5.0.1",
     "html-webpack-plugin": "^4.5.0",
+    "mini-css-extract-plugin": "^1.3.2",
+    "postcss": "^8.2.1",
+    "postcss-loader": "^4.1.0",
     "sass": "^1.29.0",
     "sass-loader": "^10.1.0",
     "style-loader": "^2.0.0",
