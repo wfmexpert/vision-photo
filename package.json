@@ -1,11 +1,13 @@
 {
   "name": "@wfmexpert/vision-photo",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Проект VISION, интерфейс для работы с профилем физ.лица",
   "scripts": {
+    "build": "webpack --mode=production",
+    "dev": "webpack serve --mode=development",
     "test": "exit 0"
   },
-  "main": "VisionPhotoGallery.js",
+  "main": "VisionPhotoGallery",
   "module": "VisionPhotoGallery",
   "private": false,
   "repository": {
