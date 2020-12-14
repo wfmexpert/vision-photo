@@ -2,7 +2,7 @@
 
 import './app.scss';
 
-class VisionPhotoGallery {
+export default class VisionPhotoGallery {
     static personId = null;
     static rootElement = null;
     static token = null;
