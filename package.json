@@ -8,8 +8,8 @@
     "test": "exit 0"
   },
   "type": "module",
-  "main": "./VisionPhotoGallery/index.js",
-  "module": "VisionPhotoGallery",
+  "main": "dist/VisionPhotoGallery.js",
+  "module": "VisionPhotoGallery/index.js",
   "private": false,
   "repository": {
     "type": "git",

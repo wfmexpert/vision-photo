@@ -7,7 +7,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 
 module.exports = {
-    entry: './VisionPhotoGallery/index.mjs',
+    entry: './VisionPhotoGallery/index.js',
     devServer: {
         contentBase: path.resolve(__dirname, 'dist'),
         compress: false,
