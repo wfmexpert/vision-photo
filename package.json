@@ -12,7 +12,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git://github.com/wfmexpert/vision-photo.git"
+    "url": "git+https://github.com/wfmexpert/vision-photo.git"
   },
   "keywords": [],
   "author": "Rustem Nasyrov",
