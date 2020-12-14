@@ -1,6 +1,6 @@
 {
   "name": "@wfmexpert/vision-photo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Проект VISION, интерфейс для работы с профилем физ.лица",
   "scripts": {
     "test": "exit 0"
@@ -46,6 +46,6 @@
     "webpack-dev-server": "^3.11.0"
   },
   "publishConfig": {
-    "registry":"https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com"
   }
 }
