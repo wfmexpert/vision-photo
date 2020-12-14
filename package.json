@@ -8,7 +8,7 @@
     "test": "exit 0"
   },
   "type": "module",
-  "main": "VisionPhotoGallery/index.js",
+  "main": "VisionPhotoGallery/index.mjs",
   "module": "VisionPhotoGallery",
   "private": false,
   "repository": {
@@ -16,7 +16,8 @@
     "url": "git+https://github.com/wfmexpert/vision-photo.git"
   },
   "files": [
-    "VisionPhotoGallery"
+    "VisionPhotoGallery",
+    "dist"
   ],
   "keywords": [],
   "author": "Rustem Nasyrov",
