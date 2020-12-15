@@ -139,7 +139,6 @@ export default class VisionPhotoGallery {
     const mainPhotoContainer = rootElement.querySelector('.vg-main-photo');
     const gallery = rootElement.querySelector('.vg-gallery');
 
-
     this.getPhotos().then(response => {
       mainPhotoContainer.innerHTML = this.createPhotoElement({
         main: true,
@@ -153,16 +152,22 @@ export default class VisionPhotoGallery {
         photoId: null,
       });
 
+      this.initEvents();
+
       if (response.ok) {
         return response.json();
       } else {
         mainPhotoContainer.innerHTML = this.createPhotoElement({main: true, empty: true, photoId: null});
       }
     }).then(responseJson => {
+      if (!responseJson) {
+        return;
+      }
+
       const mainPhotoData = responseJson.find(({main}) => main === true);
       const galleryPhotosData = responseJson.filter(({main}) => main !== true);
 
-      if (mainPhotoData) {
+      if (!!mainPhotoData) {
         mainPhotoContainer.innerHTML = this.createPhotoElement(mainPhotoData);
       } else {
         mainPhotoContainer.parentElement.classList.add('hidden');
@@ -203,24 +208,24 @@ export default class VisionPhotoGallery {
     if (main && !empty) {
       elementClasses = 'vg-photo vg-photo--main';
       buttons = `
-                <button class="vg-photo__button vg-button vg-button--red" data-action="remove-photo">Удалить</button>
-            `;
+          <button class="vg-photo__button vg-button vg-button--red" data-action="remove-photo">Удалить</button>
+      `;
     } else if (main && empty) {
       elementClasses = 'vg-photo vg-photo--main';
       buttons = `
-                <button class="vg-photo__button vg-button vg-button--red" data-action="remove-photo">Удалить</button>
-            `;
+          <button class="vg-photo__button vg-button" data-action="upload-photo">Загрузить</button>
+      `;
     } else if (!main && empty) {
       elementClasses = 'vg-gallery__item vg-photo vg-photo--upload';
       buttons = `
-                <button class="vg-photo__button vg-button vg-button--upload" data-action="upload-photo">&#43;</button>
-            `;
+          <button class="vg-photo__button vg-button vg-button--upload" data-action="upload-photo">&#43;</button>
+      `;
     } else {
       elementClasses = 'vg-gallery__item vg-photo';
       buttons = `
-                <button class="vg-photo__button vg-button vg-button--green" data-action="choose-photo">Выбрать</button>
-                <button class="vg-photo__button vg-button vg-button--red" data-action="remove-photo">Удалить</button>
-            `;
+          <button class="vg-photo__button vg-button vg-button--green" data-action="choose-photo">Выбрать</button>
+          <button class="vg-photo__button vg-button vg-button--red" data-action="remove-photo">Удалить</button>
+      `;
     }
 
     return `
