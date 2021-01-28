@@ -2,11 +2,20 @@
 
 import './app.scss';
 
+/**
+ * Класс галереи.
+ */
 export default class VisionPhotoGallery {
   static employeeId = null;
   static rootElement = null;
   static token = null;
 
+  /**
+   * Конструктор экземпляра класса галереи.
+   * @param root {string} ID корневого элемента, куда будет рендериться галерея.
+   * @param employeeId {number|string} ID сотрудника.
+   * @param token {string} CSRF-токен пользователя.
+   */
   constructor({root, employeeId, token}) {
     if (!root) {
       throw new Error('Не указан ID корневого элемента для галереи!');
@@ -30,31 +39,80 @@ export default class VisionPhotoGallery {
     this.constructor.draw();
   }
 
-  update({employeeId, token}) {
+  /**
+   * Назначаемый метод для отображения ошибок.
+   * @type {null|Function} Функция обработчик отображения ошибок.
+   */
+  static errorFunction = null;
+
+  /**
+   * Получение метода для отображения ошибок.
+   * @type {null|Function} Функция обработчик отображения ошибок.
+   */
+  get errorFunction() {
+    return this.constructor.errorFunction;
+  }
+
+  /**
+   * Назначение метода для отображения ошибок.
+   * @param errorFunction {null|Function} Функция обработчик отображения ошибок.
+   */
+  set errorFunction(errorFunction) {
+    if (errorFunction) {
+      this.constructor.errorFunction = errorFunction;
+    }
+  }
+
+  /**
+   * Обновление параметров галереи.
+   * @param employeeId {number|number} ID сотрудника.
+   * @param token {string} CSRF-токен сесси пользователя.
+   */
+  static update({employeeId, token}) {
     this.employeeId = employeeId;
     this.token = token;
 
-    this.constructor.draw();
+    this.draw();
   }
 
+  /**
+   * Получить ID сотрудника.
+   * @return {null}
+   */
   get employeeId() {
     return this.constructor.employeeId;
   }
 
+  /**
+   * Назначение экземпляру галереи ID сотрудника.
+   * @param employeeId {number|string} ID сотрудника.
+   */
   set employeeId(employeeId) {
     if (employeeId) {
       this.constructor.employeeId = employeeId;
     }
   }
 
+  /**
+   * Корневой элемент, в который будет рендериться галерея.
+   * @return {null|Element} Корневой элемент для рендера.
+   */
   get rootElement() {
     return this.constructor.rootElement;
   }
 
+  /**
+   * Получить CSRF-токен сессии пользователя.
+   * @return {null}
+   */
   get token() {
     return this.constructor.token;
   }
 
+  /**
+   * Назначить CSRF-токен сессии пользователя.
+   * @param token
+   */
   set token(token) {
     if (token) {
       this.constructor.token = token;
@@ -62,8 +120,24 @@ export default class VisionPhotoGallery {
   }
 
   /**
+   * Обработчик ошибок.
+   * @param params.message {string} Сообщение об ошибке.
+   * @param params.blockingErrorMessage {string} Блокирующее поток сообщение об ошибке.
+   */
+  static handleError(params) {
+    const { message, blockingErrorMessage } = params;
+
+    if (this.errorFunction) {
+      this.errorFunction(message);
+    } else if (blockingErrorMessage) {
+      throw new Error(blockingErrorMessage);
+    } else {
+      console.log(message);
+    }
+  }
+
+  /**
    * Обёртка для запросов к API.
-   *
    * @param requestPath {string} Название метода API.
    * @param requestBody {object} Параметры запроса.
    * @returns {Promise<Response>} Промис запроса.
@@ -85,7 +159,6 @@ export default class VisionPhotoGallery {
 
   /**
    * Выгрузка всех фотографий с портала Vision.
-   *
    * @returns {Promise<Response>} Промис с результатом выполнения запроса.
    */
   static getPhotos() {
@@ -100,7 +173,6 @@ export default class VisionPhotoGallery {
 
   /**
    * Запрос на добавление (загрузку) фотографии.
-   *
    * @param image {BufferEncoding} Фотографии в формате Base64.
    * @returns {Promise<Response>} Промис с результатом выполнения запроса.
    */
@@ -116,7 +188,6 @@ export default class VisionPhotoGallery {
 
   /**
    * Запрос на удаление фотографии.
-   *
    * @param photoId {Number} ID фотографии на портале Vision.
    * @returns {Promise<Response>} Промис с результатом выполнения запроса.
    */
@@ -133,7 +204,6 @@ export default class VisionPhotoGallery {
 
   /**
    * Запрос на обновление фотографии.
-   *
    * @param photoId {Number} ID фотографии на портале Vision.
    * @returns {Promise<Response>} Промис с результатом выполнения запроса.
    */
@@ -214,7 +284,9 @@ export default class VisionPhotoGallery {
 
       this.initEvents();
     }).catch(error => {
-      console.log(error);
+      this.handleError({
+        message: error,
+      });
 
       this.initEvents();
     });
@@ -224,7 +296,6 @@ export default class VisionPhotoGallery {
 
   /**
    * Универсальный метод для создания элемента фотографии.
-   *
    * @param params.photoId {Number} ID фотографии на портале Vision.
    * @param params.main {Boolean}  Флаг основного фото.
    * @param params.empty {Boolean} Флаг "пустого" фото, используется для отображения кнопки загрузки.
@@ -301,12 +372,20 @@ export default class VisionPhotoGallery {
    * @type {{"remove-photo": function(*): void, "file-input-changed": function(*): void, "upload-photo": function(*): void, "update-photo": function(*): void}}
    */
   static router = {
+    /**
+     * Загрузка фотографии сотрудника.
+     * @param e {Event} Событие.
+     */
     'upload-photo': (e) => {
       const fileInput = this.rootElement.querySelector('input[type="file"]');
 
       fileInput.addEventListener('change', this.router['file-input-changed']);
       fileInput.click();
     },
+    /**
+     * Слушатель события изменения файлового поля ввода.
+     * @param e {event} Событие.
+     */
     'file-input-changed': (e) => {
       const file = e.target.files[0];
       const reader = new FileReader();
@@ -321,14 +400,23 @@ export default class VisionPhotoGallery {
             }
           })
           .catch(error => {
-            console.log(error);
+            this.handleError({
+              message: error,
+            });
           });
       }
 
       reader.onerror = () => {
-        throw new Error(`Ошибка загрузки фотографии (-ий): ${reader.error}`);
+        this.handleError({
+          message: reader.error,
+          blockingErrorMessage: `Ошибка загрузки фотографии (-ий): ${reader.error}`,
+        });
       }
     },
+    /**
+     * Запрос на удаление фотографии сотрудника.
+     * @param e {Event} Событие.
+     */
     'remove-photo': (e) => {
       const photoElement = e.target.closest('.vg-photo');
       const {photoId} = photoElement.dataset;
@@ -339,9 +427,18 @@ export default class VisionPhotoGallery {
             if (response.ok) {
               this.draw();
             }
+          })
+          .catch(error => {
+            this.handleError({
+              message: error,
+            });
           });
       }
     },
+    /**
+     * Запрос на обновление фотографии сотрудника.
+     * @param e {Event} Событие.
+     */
     'update-photo': (e) => {
       const photoElement = e.target.closest('.vg-photo');
       const {photoId} = photoElement.dataset;
@@ -354,7 +451,9 @@ export default class VisionPhotoGallery {
             }
           })
           .catch(error => {
-            console.log(error);
+            this.handleError({
+              message: error,
+            });
           });
       }
     },
