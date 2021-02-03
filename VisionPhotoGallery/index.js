@@ -77,7 +77,7 @@ export default class VisionPhotoGallery {
 
   /**
    * Получить ID сотрудника.
-   * @return {null}
+   * @return {number|string} ID сотрудника.
    */
   get employeeId() {
     return this.constructor.employeeId;
@@ -125,10 +125,20 @@ export default class VisionPhotoGallery {
    * @param params.blockingErrorMessage {string} Блокирующее поток сообщение об ошибке.
    */
   static handleError(params) {
-    const { message, blockingErrorMessage } = params;
+    const {message, blockingErrorMessage} = params;
 
     if (this.errorFunction) {
-      this.errorFunction(message);
+      let messageString = '';
+
+      if (typeof message === 'object') {
+        Object.keys(message).reverse().forEach(key => {
+          messageString += `${message[key]}<br/>`;
+        });
+      }
+
+      const errorMessage = messageString.length ? messageString : JSON.stringify(message);
+
+      this.errorFunction(errorMessage, 'Ошибка');
     } else if (blockingErrorMessage) {
       throw new Error(blockingErrorMessage);
     } else {
@@ -397,12 +407,16 @@ export default class VisionPhotoGallery {
           .then(response => {
             if (response.ok) {
               this.draw();
+            } else if (response.status !== 200) {
+              return response.json();
             }
           })
-          .catch(error => {
-            this.handleError({
-              message: error,
-            });
+          .then(response => {
+            if (response.status !== 200) {
+              this.handleError({
+                message: response,
+              });
+            }
           });
       }
 
@@ -426,12 +440,16 @@ export default class VisionPhotoGallery {
           .then(response => {
             if (response.ok) {
               this.draw();
+            } else if (response.status !== 200) {
+              return response.json();
             }
           })
-          .catch(error => {
-            this.handleError({
-              message: error,
-            });
+          .then(response => {
+            if (response.status !== 200) {
+              this.handleError({
+                message: response,
+              });
+            }
           });
       }
     },
@@ -448,12 +466,16 @@ export default class VisionPhotoGallery {
           .then(response => {
             if (response.ok) {
               this.draw();
+            } else if (response.status !== 200) {
+              return response.json();
             }
           })
-          .catch(error => {
-            this.handleError({
-              message: error,
-            });
+          .then(response => {
+            if (response.status !== 200) {
+              this.handleError({
+                message: response,
+              });
+            }
           });
       }
     },
