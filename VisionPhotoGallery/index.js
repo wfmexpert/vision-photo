@@ -9,14 +9,16 @@ export default class VisionPhotoGallery {
   static employeeId = null;
   static rootElement = null;
   static token = null;
+  static disableControls = false;
 
   /**
    * Конструктор экземпляра класса галереи.
    * @param root {string} ID корневого элемента, куда будет рендериться галерея.
    * @param employeeId {number|string} ID сотрудника.
    * @param token {string} CSRF-токен пользователя.
+   * @param disableControls {boolean} Отключить возможность загрузки, обновления и удаления фотографий.
    */
-  constructor({root, employeeId, token}) {
+  constructor({root, employeeId, token, disableControls = false}) {
     if (!root) {
       throw new Error('Не указан ID корневого элемента для галереи!');
     }
@@ -35,6 +37,7 @@ export default class VisionPhotoGallery {
 
     this.employeeId = employeeId;
     this.token = token;
+    this.disableControls = disableControls;
 
     this.constructor.draw();
   }
@@ -44,7 +47,6 @@ export default class VisionPhotoGallery {
    * @type {null|Function} Функция обработчик отображения ошибок.
    */
   static errorFunction = null;
-
   /**
    * Получение метода для отображения ошибок.
    * @type {null|Function} Функция обработчик отображения ошибок.
@@ -103,7 +105,7 @@ export default class VisionPhotoGallery {
 
   /**
    * Получить CSRF-токен сессии пользователя.
-   * @return {null}
+   * @return {null|string} CSRF-токен сессии пользователя.
    */
   get token() {
     return this.constructor.token;
@@ -111,11 +113,29 @@ export default class VisionPhotoGallery {
 
   /**
    * Назначить CSRF-токен сессии пользователя.
-   * @param token
+   * @param token {string} CSRF-токен сессии пользователя.
    */
   set token(token) {
     if (token) {
       this.constructor.token = token;
+    }
+  }
+
+  /**
+   * Получить значение состояния контролов.
+   * @return {boolean} Состояние контролов.
+   */
+  get disableControls() {
+    return this.constructor.token;
+  }
+
+  /**
+   * Назначить CSRF-токен сессии пользователя.
+   * @param value {boolean} Включить/отключить контролы.
+   */
+  set disableControls(value) {
+    if (value) {
+      this.constructor.disableControls = value;
     }
   }
 
@@ -315,6 +335,7 @@ export default class VisionPhotoGallery {
    */
   static createPhotoElement(params) {
     const {photoId, main, empty, path, avatarUrl} = params;
+    const {disableControls: isControlsDisabled} = this;
     let buttons = '';
     let elementClasses = '';
     let backgroundImage = '';
@@ -360,7 +381,7 @@ export default class VisionPhotoGallery {
         ${backgroundImage}
         data-photo-id="${photoId}"
         ${mainAttribute}>
-        ${buttons}
+        ${isControlsDisabled ? '' : buttons}
         </div>
       `;
   }
