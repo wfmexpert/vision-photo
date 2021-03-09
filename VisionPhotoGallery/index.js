@@ -7,6 +7,7 @@ import './app.scss';
  */
 export default class VisionPhotoGallery {
   static employeeId = null;
+  static visionPersonId = null;
   static rootElement = null;
   static token = null;
   static disableControls = false;
@@ -15,10 +16,11 @@ export default class VisionPhotoGallery {
    * Конструктор экземпляра класса галереи.
    * @param root {string} ID корневого элемента, куда будет рендериться галерея.
    * @param employeeId {number|string} ID сотрудника.
+   * @param visionPersonId {number|string} ID сотрудника аутсорсера.
    * @param token {string} CSRF-токен пользователя.
    * @param disableControls {boolean} Отключить возможность загрузки, обновления и удаления фотографий.
    */
-  constructor({root, employeeId, token, disableControls = false}) {
+  constructor({root, employeeId, visionPersonId, token, disableControls = false}) {
     if (!root) {
       throw new Error('Не указан ID корневого элемента для галереи!');
     }
@@ -31,11 +33,12 @@ export default class VisionPhotoGallery {
       throw new Error('Проверьте указанный ID корневого элемента для галереи!');
     }
 
-    if (!employeeId) {
+    if (!employeeId && !visionPersonId) {
       throw new Error('Не указан ID пользователя на портале Vision');
     }
 
     this.employeeId = employeeId;
+    this.visionPersonId = visionPersonId;
     this.token = token;
     this.disableControls = disableControls;
 
@@ -92,6 +95,24 @@ export default class VisionPhotoGallery {
   set employeeId(employeeId) {
     if (employeeId) {
       this.constructor.employeeId = employeeId;
+    }
+  }
+
+  /**
+   * Получить ID сотрудника аутсорсера.
+   * @return {number|string} ID сотрудника аутсорсера.
+   */
+  get visionPersonId() {
+    return this.constructor.employeeId;
+  }
+
+  /**
+   * Назначение экземпляру галереи ID сотрудника аутсорсера.
+   * @param visionPersonId {number|string} ID сотрудника аутсорсера.
+   */
+  set visionPersonId(visionPersonId) {
+    if (visionPersonId) {
+      this.constructor.visionPersonId = visionPersonId;
     }
   }
 
@@ -192,10 +213,18 @@ export default class VisionPhotoGallery {
    * @returns {Promise<Response>} Промис с результатом выполнения запроса.
    */
   static getPhotos() {
+    const employee = {};
+
+    if (this.employeeId && !this.visionPersonId) {
+      employee.employeeId = this.employeeId;
+    } else if (this.visionPersonId) {
+      employee.vision_person_id = this.visionPersonId;
+    }
+
     return this.request({
       requestPath: 'get_photos',
       requestBody: {
-        employeeId: this.employeeId,
+        ...employee,
         masterAlbum: true,
       }
     });
