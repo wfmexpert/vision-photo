@@ -1,6 +1,6 @@
-'use strict';
+"use strict";
 
-import './app.scss';
+import "./app.scss";
 
 /**
  * Класс галереи.
@@ -20,21 +20,27 @@ export default class VisionPhotoGallery {
    * @param token {string} CSRF-токен пользователя.
    * @param disableControls {boolean} Отключить возможность загрузки, обновления и удаления фотографий.
    */
-  constructor({root, employeeId, visionPersonId, token, disableControls = false}) {
+  constructor({
+    root,
+    employeeId,
+    visionPersonId,
+    token,
+    disableControls = false
+  }) {
     if (!root) {
-      throw new Error('Не указан ID корневого элемента для галереи!');
+      throw new Error("Не указан ID корневого элемента для галереи!");
     }
 
     const rootElement = document.getElementById(root);
 
     if (!!rootElement) {
-      this.constructor.rootElement = rootElement;
+      VisionPhotoGallery.rootElement = rootElement;
     } else {
-      throw new Error('Проверьте указанный ID корневого элемента для галереи!');
+      throw new Error("Проверьте указанный ID корневого элемента для галереи!");
     }
 
     if (!employeeId && !visionPersonId) {
-      throw new Error('Не указан ID пользователя на портале Vision');
+      throw new Error("Не указан ID пользователя на портале Vision");
     }
 
     this.employeeId = employeeId;
@@ -42,7 +48,7 @@ export default class VisionPhotoGallery {
     this.token = token;
     this.disableControls = disableControls;
 
-    this.constructor.draw();
+    VisionPhotoGallery.draw();
   }
 
   /**
@@ -55,7 +61,7 @@ export default class VisionPhotoGallery {
    * @type {null|Function} Функция обработчик отображения ошибок.
    */
   get errorFunction() {
-    return this.constructor.errorFunction;
+    return VisionPhotoGallery.errorFunction;
   }
 
   /**
@@ -64,7 +70,7 @@ export default class VisionPhotoGallery {
    */
   set errorFunction(errorFunction) {
     if (errorFunction) {
-      this.constructor.errorFunction = errorFunction;
+      VisionPhotoGallery.errorFunction = errorFunction;
     }
   }
 
@@ -73,7 +79,7 @@ export default class VisionPhotoGallery {
    * @param employeeId {number|number} ID сотрудника.
    * @param token {string} CSRF-токен сесси пользователя.
    */
-  static update({employeeId, token}) {
+  static update({ employeeId, token }) {
     this.employeeId = employeeId;
     this.token = token;
 
@@ -85,7 +91,7 @@ export default class VisionPhotoGallery {
    * @return {number|string} ID сотрудника.
    */
   get employeeId() {
-    return this.constructor.employeeId;
+    return VisionPhotoGallery.employeeId;
   }
 
   /**
@@ -94,7 +100,7 @@ export default class VisionPhotoGallery {
    */
   set employeeId(employeeId) {
     if (employeeId) {
-      this.constructor.employeeId = employeeId;
+      VisionPhotoGallery.employeeId = employeeId;
     }
   }
 
@@ -103,7 +109,7 @@ export default class VisionPhotoGallery {
    * @return {number|string} ID сотрудника аутсорсера.
    */
   get visionPersonId() {
-    return this.constructor.employeeId;
+    return VisionPhotoGallery.employeeId;
   }
 
   /**
@@ -112,7 +118,7 @@ export default class VisionPhotoGallery {
    */
   set visionPersonId(visionPersonId) {
     if (visionPersonId) {
-      this.constructor.visionPersonId = visionPersonId;
+      VisionPhotoGallery.visionPersonId = visionPersonId;
     }
   }
 
@@ -121,7 +127,7 @@ export default class VisionPhotoGallery {
    * @return {null|Element} Корневой элемент для рендера.
    */
   get rootElement() {
-    return this.constructor.rootElement;
+    return VisionPhotoGallery.rootElement;
   }
 
   /**
@@ -129,7 +135,7 @@ export default class VisionPhotoGallery {
    * @return {null|string} CSRF-токен сессии пользователя.
    */
   get token() {
-    return this.constructor.token;
+    return VisionPhotoGallery.token;
   }
 
   /**
@@ -138,7 +144,7 @@ export default class VisionPhotoGallery {
    */
   set token(token) {
     if (token) {
-      this.constructor.token = token;
+      VisionPhotoGallery.token = token;
     }
   }
 
@@ -147,7 +153,7 @@ export default class VisionPhotoGallery {
    * @return {boolean} Состояние контролов.
    */
   get disableControls() {
-    return this.constructor.token;
+    return VisionPhotoGallery.token;
   }
 
   /**
@@ -156,7 +162,7 @@ export default class VisionPhotoGallery {
    */
   set disableControls(value) {
     if (value) {
-      this.constructor.disableControls = value;
+      VisionPhotoGallery.disableControls = value;
     }
   }
 
@@ -166,20 +172,24 @@ export default class VisionPhotoGallery {
    * @param params.blockingErrorMessage {string} Блокирующее поток сообщение об ошибке.
    */
   static handleError(params) {
-    const {message, blockingErrorMessage} = params;
+    const { message, blockingErrorMessage } = params;
 
     if (this.errorFunction) {
-      let messageString = '';
+      let messageString = "";
 
-      if (typeof message === 'object') {
-        Object.keys(message).reverse().forEach(key => {
-          messageString += `${message[key]}<br/>`;
-        });
+      if (typeof message === "object") {
+        Object.keys(message)
+          .reverse()
+          .forEach(key => {
+            messageString += `${message[key]}<br/>`;
+          });
       }
 
-      const errorMessage = messageString.length ? messageString : JSON.stringify(message);
+      const errorMessage = messageString.length
+        ? messageString
+        : JSON.stringify(message);
 
-      this.errorFunction(errorMessage, 'Ошибка');
+      this.errorFunction(errorMessage, "Ошибка");
     } else if (blockingErrorMessage) {
       throw new Error(blockingErrorMessage);
     } else {
@@ -193,16 +203,16 @@ export default class VisionPhotoGallery {
    * @param requestBody {object} Параметры запроса.
    * @returns {Promise<Response>} Промис запроса.
    */
-  static request({requestPath, requestBody}) {
+  static request({ requestPath, requestBody }) {
     const requestDefaults = {
-      method: 'POST',
-      mode: 'same-origin',
-      credentials: 'same-origin',
+      method: "POST",
+      mode: "same-origin",
+      credentials: "same-origin",
       headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': this.token,
+        "Content-Type": "application/json",
+        "X-CSRFToken": this.token
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify(requestBody)
     };
 
     return fetch(`/api/v2/vision/${requestPath}/`, requestDefaults);
@@ -222,10 +232,10 @@ export default class VisionPhotoGallery {
     }
 
     return this.request({
-      requestPath: 'get_photos',
+      requestPath: "get_photos",
       requestBody: {
         ...employee,
-        masterAlbum: true,
+        masterAlbum: true
       }
     });
   }
@@ -237,11 +247,11 @@ export default class VisionPhotoGallery {
    */
   static addPhoto(image) {
     return this.request({
-      requestPath: 'add_photo',
+      requestPath: "add_photo",
       requestBody: {
         employeeId: this.employeeId,
-        image,
-      },
+        image
+      }
     });
   }
 
@@ -252,12 +262,12 @@ export default class VisionPhotoGallery {
    */
   static deletePhoto(photoId) {
     return this.request({
-      requestPath: 'delete_photo',
+      requestPath: "delete_photo",
       requestBody: {
         employeeId: this.employeeId,
         photoIds: [photoId],
-        masterAlbum: true,
-      },
+        masterAlbum: true
+      }
     });
   }
 
@@ -268,11 +278,11 @@ export default class VisionPhotoGallery {
    */
   static updatePhoto(photoId) {
     return this.request({
-      requestPath: 'update_photo',
+      requestPath: "update_photo",
       requestBody: {
         employeeId: this.employeeId,
-        photo_id: photoId,
-      },
+        photo_id: photoId
+      }
     });
   }
 
@@ -283,92 +293,123 @@ export default class VisionPhotoGallery {
     const rootElement = this.rootElement;
 
     rootElement.innerHTML = `
-            <div class="vision-photo-gallery">
-                <input type="file" class="vision-photo-gallery__file-field" tabindex="-1">
-                <div class="vision-photo-gallery__item vision-photo-gallery__item--main">
-                    <h4 class="vision-photo-gallery__title">Основная фотография</h4>
-                    <div class="vg-main-photo"></div>
-                </div>
-                <div class="vision-photo-gallery__item">
-                    <h4 class="vision-photo-gallery__title">Галерея</h4>
-                    <div class="vg-gallery"></div>
-                </div>
-            </div>
-        `;
+      <div class="vision-photo-gallery vision-photo-gallery--message" data-message="Загрузка...">
+        <input type="file" class="vision-photo-gallery__file-field" tabindex="-1">
+        <div class="vision-photo-gallery__item vision-photo-gallery__item--main">
+          <h4 class="vision-photo-gallery__title">Основная фотография</h4>
+          <div class="vg-main-photo"></div>
+        </div>
+        <div class="vision-photo-gallery__item">
+          <h4 class="vision-photo-gallery__title">Галерея</h4>
+          <div class="vg-gallery"></div>
+        </div>
+      </div>
+    `;
 
-    const mainPhotoContainer = rootElement.querySelector('.vg-main-photo');
-    const gallery = rootElement.querySelector('.vg-gallery');
+    const galleryContainer = document.querySelector(".vision-photo-gallery");
+    const mainPhotoContainer = rootElement.querySelector(".vg-main-photo");
+    const gallery = rootElement.querySelector(".vg-gallery");
+    const { disableControls: isControlsDisabled } = this;
 
-    this.getPhotos().then(response => {
-      mainPhotoContainer.innerHTML = this.createPhotoElement({
-        main: true,
-        empty: true,
-        photoId: null
+    this.getPhotos()
+      .then(response => {
+        mainPhotoContainer.innerHTML = this.createPhotoElement({
+          main: true,
+          empty: true,
+          photoId: null
+        });
+
+        gallery.innerHTML = this.createPhotoElement({
+          main: false,
+          empty: true,
+          photoId: null
+        });
+
+        if (response.ok) {
+          return response.json();
+        } else {
+          mainPhotoContainer.innerHTML = this.createPhotoElement({
+            main: true,
+            empty: true,
+            photoId: null
+          });
+        }
+
+        this.initEvents();
+      })
+      .then(responseJson => {
+        if (!responseJson) {
+          return;
+        }
+
+        if (!responseJson.length) {
+          mainPhotoContainer.parentElement.classList.add("hidden");
+          gallery.parentElement.classList.add("hidden");
+          galleryContainer.dataset.message = "Нет фотографий";
+
+          return;
+        }
+
+        const mainPhotoData = responseJson.find(({ main }) => main);
+        const galleryPhotosData = responseJson.filter(({ main }) => !main);
+
+        if (!!mainPhotoData) {
+          mainPhotoContainer.innerHTML = this.createPhotoElement(mainPhotoData);
+        } else {
+          mainPhotoContainer.parentElement.classList.add("hidden");
+        }
+
+        if (galleryPhotosData.length) {
+          let galleryPhotosHtml = "";
+
+          galleryPhotosData.forEach(
+            photoData =>
+              (galleryPhotosHtml += this.createPhotoElement(photoData))
+          );
+
+          if (!isControlsDisabled) {
+            galleryPhotosHtml += this.createPhotoElement({
+              main: false,
+              empty: true,
+              photoId: null
+            });
+          }
+
+          gallery.innerHTML = galleryPhotosHtml;
+        } else {
+          gallery.parentElement.classList.add("hidden");
+        }
+
+        this.initEvents();
+        galleryContainer.classList.remove("vision-photo-gallery--message");
+      })
+      .catch(error => {
+        this.handleError({
+          message: error
+        });
+
+        this.initEvents();
       });
-
-      gallery.innerHTML = this.createPhotoElement({
-        main: false,
-        empty: true,
-        photoId: null,
-      });
-
-      if (response.ok) {
-        return response.json();
-      } else {
-        mainPhotoContainer.innerHTML = this.createPhotoElement({main: true, empty: true, photoId: null});
-      }
-
-      this.initEvents();
-    }).then(responseJson => {
-      if (!responseJson) {
-        return;
-      }
-
-      const mainPhotoData = responseJson.find(({main}) => main === true);
-      const galleryPhotosData = responseJson.filter(({main}) => main !== true);
-
-      if (!!mainPhotoData) {
-        mainPhotoContainer.innerHTML = this.createPhotoElement(mainPhotoData);
-      } else {
-        mainPhotoContainer.parentElement.classList.add('hidden');
-      }
-
-      if (galleryPhotosData.length) {
-        let galleryPhotosHtml = '';
-
-        galleryPhotosData.forEach((photoData) => galleryPhotosHtml += this.createPhotoElement(photoData));
-        galleryPhotosHtml += this.createPhotoElement({main: false, empty: true, photoId: null});
-        gallery.innerHTML = galleryPhotosHtml
-      }
-
-      this.initEvents();
-    }).catch(error => {
-      this.handleError({
-        message: error,
-      });
-
-      this.initEvents();
-    });
 
     this.initEvents();
   }
 
   /**
    * Универсальный метод для создания элемента фотографии.
-   * @param params.photoId {Number} ID фотографии на портале Vision.
-   * @param params.main {Boolean}  Флаг основного фото.
-   * @param params.empty {Boolean} Флаг "пустого" фото, используется для отображения кнопки загрузки.
-   * @param params.path {String} Путь к фотографии.
-   * @param params.avatarUrl {String} Путь к фотографии.
+   * @param params.photoId {number} ID фотографии на портале Vision.
+   * @param params.main {boolean}  Флаг основного фото.
+   * @param params.empty {boolean} Флаг "пустого" фото, используется для отображения кнопки загрузки.
+   * @param params.path {string} Путь к фотографии.
+   * @param params.avatarUrl {string} Путь к фотографии.
    * @returns {string} Элемент фотографии в виде строки.
    */
   static createPhotoElement(params) {
-    const {photoId, main, empty, path, avatarUrl} = params;
-    const {disableControls: isControlsDisabled} = this;
-    let buttons = '';
-    let elementClasses = '';
-    let backgroundImage = '';
-    let mainAttribute = '';
+    const { photoId, main, empty, path, avatarUrl } = params;
+    const { disableControls: isControlsDisabled } = this;
+    let buttons = "";
+    let elementClasses = "";
+    let backgroundImage = "";
+    let mainAttribute = "";
 
     if (path) {
       backgroundImage = `style="background-image: url(${path})"`;
@@ -383,22 +424,22 @@ export default class VisionPhotoGallery {
     }
 
     if (main && !empty) {
-      elementClasses = 'vg-photo vg-photo--main';
+      elementClasses = "vg-photo vg-photo--main";
       buttons = `
         <button class="vg-photo__button vg-button vg-button--red" data-action="remove-photo">Удалить</button>
       `;
     } else if (main && empty) {
-      elementClasses = 'vg-photo vg-photo--main';
+      elementClasses = "vg-photo vg-photo--main";
       buttons = `
         <button class="vg-photo__button vg-button" data-action="upload-photo">Загрузить</button>
       `;
     } else if (!main && empty) {
-      elementClasses = 'vg-gallery__item vg-photo vg-photo--upload';
+      elementClasses = "vg-gallery__item vg-photo vg-photo--upload";
       buttons = `
         <button class="vg-photo__button vg-button vg-button--upload" data-action="upload-photo">&#43;</button>
       `;
     } else {
-      elementClasses = 'vg-gallery__item vg-photo';
+      elementClasses = "vg-gallery__item vg-photo";
       buttons = `
         <button class="vg-photo__button vg-button vg-button--green" data-action="update-photo">Выбрать</button>
         <button class="vg-photo__button vg-button vg-button--red" data-action="remove-photo">Удалить</button>
@@ -410,7 +451,7 @@ export default class VisionPhotoGallery {
         ${backgroundImage}
         data-photo-id="${photoId}"
         ${mainAttribute}>
-        ${isControlsDisabled ? '' : buttons}
+        ${isControlsDisabled ? "" : buttons}
         </div>
       `;
   }
@@ -419,11 +460,15 @@ export default class VisionPhotoGallery {
    * Инициализация событий для кнопок галереи.
    */
   static initEvents() {
-    const {rootElement} = this;
-    const buttons = rootElement.querySelectorAll('button');
+    const { rootElement } = this;
+    const buttons = rootElement.querySelectorAll("button");
 
     buttons.forEach(button => {
-      button.addEventListener('click', this.router[button.dataset.action], false);
+      button.addEventListener(
+        "click",
+        this.router[button.dataset.action],
+        false
+      );
     });
   }
 
@@ -436,17 +481,17 @@ export default class VisionPhotoGallery {
      * Загрузка фотографии сотрудника.
      * @param e {Event} Событие.
      */
-    'upload-photo': (e) => {
+    "upload-photo": e => {
       const fileInput = this.rootElement.querySelector('input[type="file"]');
 
-      fileInput.addEventListener('change', this.router['file-input-changed']);
+      fileInput.addEventListener("change", this.router["file-input-changed"]);
       fileInput.click();
     },
     /**
      * Слушатель события изменения файлового поля ввода.
      * @param e {event} Событие.
      */
-    'file-input-changed': (e) => {
+    "file-input-changed": e => {
       const file = e.target.files[0];
       const reader = new FileReader();
 
@@ -464,26 +509,26 @@ export default class VisionPhotoGallery {
           .then(response => {
             if (response.status !== 200) {
               this.handleError({
-                message: response,
+                message: response
               });
             }
           });
-      }
+      };
 
       reader.onerror = () => {
         this.handleError({
           message: reader.error,
-          blockingErrorMessage: `Ошибка загрузки фотографии (-ий): ${reader.error}`,
+          blockingErrorMessage: `Ошибка загрузки фотографии (-ий): ${reader.error}`
         });
-      }
+      };
     },
     /**
      * Запрос на удаление фотографии сотрудника.
      * @param e {Event} Событие.
      */
-    'remove-photo': (e) => {
-      const photoElement = e.target.closest('.vg-photo');
-      const {photoId} = photoElement.dataset;
+    "remove-photo": e => {
+      const photoElement = e.target.closest(".vg-photo");
+      const { photoId } = photoElement.dataset;
 
       if (!!photoId) {
         this.deletePhoto(+photoId)
@@ -497,7 +542,7 @@ export default class VisionPhotoGallery {
           .then(response => {
             if (response.status !== 200) {
               this.handleError({
-                message: response,
+                message: response
               });
             }
           });
@@ -507,9 +552,9 @@ export default class VisionPhotoGallery {
      * Запрос на обновление фотографии сотрудника.
      * @param e {Event} Событие.
      */
-    'update-photo': (e) => {
-      const photoElement = e.target.closest('.vg-photo');
-      const {photoId} = photoElement.dataset;
+    "update-photo": e => {
+      const photoElement = e.target.closest(".vg-photo");
+      const { photoId } = photoElement.dataset;
 
       if (!!photoId) {
         this.updatePhoto(+photoId)
@@ -523,11 +568,11 @@ export default class VisionPhotoGallery {
           .then(response => {
             if (response.status !== 200) {
               this.handleError({
-                message: response,
+                message: response
               });
             }
           });
       }
-    },
-  }
+    }
+  };
 }
