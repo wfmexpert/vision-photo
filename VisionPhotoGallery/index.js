@@ -153,7 +153,7 @@ export default class VisionPhotoGallery {
    * @return {boolean} Состояние контролов.
    */
   get disableControls() {
-    return VisionPhotoGallery.token;
+    return VisionPhotoGallery.disableControls;
   }
 
   /**
@@ -178,11 +178,15 @@ export default class VisionPhotoGallery {
       let messageString = "";
 
       if (typeof message === "object") {
-        Object.keys(message)
-          .reverse()
-          .forEach(key => {
-            messageString += `${message[key]}<br/>`;
-          });
+        if (message.faultstring) {
+          messageString = message.faultstring;
+        } else {
+          Object.keys(message)
+            .reverse()
+            .forEach(key => {
+              messageString += `${message[key]}<br/>`;
+            });
+        }
       }
 
       const errorMessage = messageString.length
@@ -264,9 +268,7 @@ export default class VisionPhotoGallery {
     return this.request({
       requestPath: "delete_photo",
       requestBody: {
-        employeeId: this.employeeId,
-        photoIds: [photoId],
-        masterAlbum: true
+        photo_id: photoId
       }
     });
   }
@@ -312,84 +314,87 @@ export default class VisionPhotoGallery {
     const { disableControls: isControlsDisabled } = this;
 
     this.getPhotos()
-      .then(response => {
-        mainPhotoContainer.innerHTML = this.createPhotoElement({
-          main: true,
-          empty: true,
-          photoId: null
-        });
-
-        gallery.innerHTML = this.createPhotoElement({
-          main: false,
-          empty: true,
-          photoId: null
-        });
-
-        if (response.ok) {
-          return response.json();
-        } else {
+      .then(
+        response => {
           mainPhotoContainer.innerHTML = this.createPhotoElement({
             main: true,
             empty: true,
             photoId: null
           });
-        }
 
-        this.initEvents();
-      })
-      .then(responseJson => {
-        if (!responseJson) {
-          return;
-        }
+          gallery.innerHTML = this.createPhotoElement({
+            main: false,
+            empty: true,
+            photoId: null
+          });
 
-        if (!responseJson.length) {
-          mainPhotoContainer.parentElement.classList.add("hidden");
-          gallery.parentElement.classList.add("hidden");
-          galleryContainer.dataset.message = "Нет фотографий";
-
-          return;
-        }
-
-        const mainPhotoData = responseJson.find(({ main }) => main);
-        const galleryPhotosData = responseJson.filter(({ main }) => !main);
-
-        if (!!mainPhotoData) {
-          mainPhotoContainer.innerHTML = this.createPhotoElement(mainPhotoData);
-        } else {
-          mainPhotoContainer.parentElement.classList.add("hidden");
-        }
-
-        if (galleryPhotosData.length) {
-          let galleryPhotosHtml = "";
-
-          galleryPhotosData.forEach(
-            photoData =>
-              (galleryPhotosHtml += this.createPhotoElement(photoData))
-          );
-
-          if (!isControlsDisabled) {
-            galleryPhotosHtml += this.createPhotoElement({
-              main: false,
+          if (response.ok) {
+            return response.json();
+          } else {
+            mainPhotoContainer.innerHTML = this.createPhotoElement({
+              main: true,
               empty: true,
               photoId: null
             });
           }
 
-          gallery.innerHTML = galleryPhotosHtml;
-        } else {
-          gallery.parentElement.classList.add("hidden");
+          this.initEvents();
+        },
+        error => {
+          this.handleError({
+            message: error
+          });
+
+          this.initEvents();
         }
+      )
+      .then(
+        responseJson => {
+          if (!responseJson) {
+            return;
+          }
 
-        this.initEvents();
-        galleryContainer.classList.remove("vision-photo-gallery--message");
-      })
-      .catch(error => {
-        this.handleError({
-          message: error
-        });
+          const mainPhotoData = responseJson.find(({ main }) => main);
+          const galleryPhotosData = responseJson.filter(({ main }) => !main);
 
-        this.initEvents();
-      });
+          if (!!mainPhotoData) {
+            mainPhotoContainer.innerHTML = this.createPhotoElement(
+              mainPhotoData
+            );
+          } else {
+            mainPhotoContainer.parentElement.classList.add("hidden");
+          }
+
+          if (galleryPhotosData.length) {
+            let galleryPhotosHtml = "";
+
+            galleryPhotosData.forEach(
+              photoData =>
+                (galleryPhotosHtml += this.createPhotoElement(photoData))
+            );
+
+            if (!isControlsDisabled) {
+              galleryPhotosHtml += this.createPhotoElement({
+                main: false,
+                empty: true,
+                photoId: null
+              });
+            }
+
+            gallery.innerHTML = galleryPhotosHtml;
+          }
+
+          this.initEvents();
+          galleryContainer.classList.remove("vision-photo-gallery--message");
+        },
+        error => {
+          this.handleError({
+            message: error
+          });
+
+          this.initEvents();
+        }
+      );
 
     this.initEvents();
   }
@@ -498,21 +503,20 @@ export default class VisionPhotoGallery {
       reader.readAsDataURL(file);
 
       reader.onload = () => {
-        this.addPhoto(reader.result)
-          .then(response => {
+        this.addPhoto(reader.result).then(
+          response => {
             if (response.ok) {
               this.draw();
             } else if (response.status !== 200) {
               return response.json();
             }
-          })
-          .then(response => {
-            if (response.status !== 200) {
-              this.handleError({
-                message: response
-              });
-            }
-          });
+          },
+          error => {
+            this.handleError({
+              message: error
+            });
+          }
+        );
       };
 
       reader.onerror = () => {
@@ -531,21 +535,20 @@ export default class VisionPhotoGallery {
       const { photoId } = photoElement.dataset;
 
       if (!!photoId) {
-        this.deletePhoto(+photoId)
-          .then(response => {
+        this.deletePhoto(+photoId).then(
+          response => {
             if (response.ok) {
               this.draw();
             } else if (response.status !== 200) {
               return response.json();
             }
-          })
-          .then(response => {
-            if (response.status !== 200) {
-              this.handleError({
-                message: response
-              });
-            }
-          });
+          },
+          error => {
+            this.handleError({
+              message: error
+            });
+          }
+        );
       }
     },
     /**
@@ -557,21 +560,20 @@ export default class VisionPhotoGallery {
       const { photoId } = photoElement.dataset;
 
       if (!!photoId) {
-        this.updatePhoto(+photoId)
-          .then(response => {
+        this.updatePhoto(+photoId).then(
+          response => {
             if (response.ok) {
               this.draw();
             } else if (response.status !== 200) {
               return response.json();
             }
-          })
-          .then(response => {
-            if (response.status !== 200) {
-              this.handleError({
-                message: response
-              });
-            }
-          });
+          },
+          error => {
+            this.handleError({
+              message: error
+            });
+          }
+        );
       }
     }
   };
