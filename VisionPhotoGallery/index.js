@@ -336,6 +336,9 @@ export default class VisionPhotoGallery {
               empty: true,
               photoId: null
             });
+
+            galleryContainer.classList.remove("vision-photo-gallery--message");
+            mainPhotoContainer.parentElement.classList.add("hidden");
           }
 
           this.initEvents();
@@ -394,7 +397,13 @@ export default class VisionPhotoGallery {
 
           this.initEvents();
         }
-      );
+      )
+      .catch(error => {
+        this.handleError({
+          message: error
+        });
+        this.initEvents();
+      });
 
     this.initEvents();
   }

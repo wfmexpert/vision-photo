@@ -83,10 +83,8 @@ $active-over-opacity: 1;
 
     &__item {
       flex: 0 auto;
-
-      & + .vg-gallery__item {
-        margin-left: 1rem;
-      }
+      margin-right: 1rem;
+      margin-bottom: 1rem;
     }
 
     &:hover .vg-gallery__item {
