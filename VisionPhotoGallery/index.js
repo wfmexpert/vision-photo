@@ -10,22 +10,36 @@ export default class VisionPhotoGallery {
   static visionPersonId = null;
   static rootElement = null;
   static token = null;
-  static disableControls = false;
+  static controls = {
+    disableAll: false,
+    update: true,
+    upload: true,
+    remove: true
+  };
+  static masterAlbum = true;
 
   /**
    * Конструктор экземпляра класса галереи.
    * @param root {string} ID корневого элемента, куда будет рендериться галерея.
    * @param employeeId {number|string} ID сотрудника.
    * @param visionPersonId {number|string} ID сотрудника аутсорсера.
+   * @param personId {number|string} ID сотрудника аутсорсера.
    * @param token {string} CSRF-токен пользователя.
-   * @param disableControls {boolean} Отключить возможность загрузки, обновления и удаления фотографий.
+   * @param controls {object} Настройка отображения элементов управления.
+   * @param controls.disableAll {boolean} Отключить все элементы управления.
+   * @param controls.update {boolean} Отображение кнопки обновления фотографии (установка основной).
+   * @param controls.upload {boolean} Отображение кнопки загрузки фотографии.
+   * @param controls.remove {boolean} Отображение кнопки удаления фотографии.
+   * @param masterAlbum {boolean} Загрузка фотографий из мастер-албома.
    */
   constructor({
     root,
     employeeId,
     visionPersonId,
+    personId,
     token,
-    disableControls = false
+    controls,
+    masterAlbum = true
   }) {
     if (!root) {
       throw new Error("Не указан ID корневого элемента для галереи!");
@@ -39,14 +53,16 @@ export default class VisionPhotoGallery {
       throw new Error("Проверьте указанный ID корневого элемента для галереи!");
     }
 
-    if (!employeeId && !visionPersonId) {
+    if (!employeeId && !visionPersonId && !personId) {
       throw new Error("Не указан ID пользователя на портале Vision");
     }
 
     this.employeeId = employeeId;
     this.visionPersonId = visionPersonId;
+    this.personId = personId;
     this.token = token;
-    this.disableControls = disableControls;
+    this.controls = controls;
+    this.masterAlbum = masterAlbum;
 
     VisionPhotoGallery.draw();
   }
@@ -109,7 +125,7 @@ export default class VisionPhotoGallery {
    * @return {number|string} ID сотрудника аутсорсера.
    */
   get visionPersonId() {
-    return VisionPhotoGallery.employeeId;
+    return VisionPhotoGallery.visionPersonId;
   }
 
   /**
@@ -119,6 +135,24 @@ export default class VisionPhotoGallery {
   set visionPersonId(visionPersonId) {
     if (visionPersonId) {
       VisionPhotoGallery.visionPersonId = visionPersonId;
+    }
+  }
+
+  /**
+   * Получить ID сотрудника аутсорсера.
+   * @return {number|string} ID сотрудника аутсорсера.
+   */
+  get personId() {
+    return VisionPhotoGallery.personId;
+  }
+
+  /**
+   * Назначение экземпляру галереи ID сотрудника аутсорсера.
+   * @param personId {number|string} ID сотрудника аутсорсера.
+   */
+  set personId(personId) {
+    if (personId) {
+      VisionPhotoGallery.personId = personId;
     }
   }
 
@@ -152,18 +186,35 @@ export default class VisionPhotoGallery {
    * Получить значение состояния контролов.
    * @return {boolean} Состояние контролов.
    */
-  get disableControls() {
-    return VisionPhotoGallery.disableControls;
+  get controls() {
+    return VisionPhotoGallery.controls;
   }
 
   /**
-   * Назначить CSRF-токен сессии пользователя.
+   * Назначить значение состояния контролов.
    * @param value {boolean} Включить/отключить контролы.
    */
-  set disableControls(value) {
-    if (value) {
-      VisionPhotoGallery.disableControls = value;
-    }
+  set controls(value) {
+    VisionPhotoGallery.controls = {
+      ...VisionPhotoGallery.controls,
+      ...value
+    };
+  }
+
+  /**
+   * Получить флаг загрузки фотографий из мастер-альбома.
+   * @return {boolean} Состояние флага загрузки фотографий из мастер-альбома.
+   */
+  get masterAlbum() {
+    return VisionPhotoGallery.masterAlbum;
+  }
+
+  /**
+   * Назначить флаг загрузки фотографий из мастер-альбома.
+   * @param value {boolean} Включить/выключить загрузку из мастер-альбома.
+   */
+  set masterAlbum(value) {
+    VisionPhotoGallery.masterAlbum = value;
   }
 
   /**
@@ -233,13 +284,15 @@ export default class VisionPhotoGallery {
       employee.employeeId = this.employeeId;
     } else if (this.visionPersonId) {
       employee.vision_person_id = this.visionPersonId;
+    } else if (this.personId) {
+      employee.personId = this.personId;
     }
 
     return this.request({
       requestPath: "get_photos",
       requestBody: {
         ...employee,
-        masterAlbum: true
+        masterAlbum: this.masterAlbum
       }
     });
   }
@@ -289,6 +342,21 @@ export default class VisionPhotoGallery {
   }
 
   /**
+   * Запрос на установку фотографии как основной для сотрудника.
+   * @param photoId {Number} ID фотографии на портале Vision.
+   * @returns {Promise<Response>} Промис с результатом выполнения запроса.
+   */
+  static setAsMainPhoto(photoId) {
+    return this.request({
+      requestPath: "set_main_photo",
+      requestBody: {
+        employeeId: this.employeeId,
+        photoId: photoId
+      }
+    });
+  }
+
+  /**
    * Отрисовка DOM галереии.
    */
   static draw() {
@@ -298,11 +366,9 @@ export default class VisionPhotoGallery {
       <div class="vision-photo-gallery vision-photo-gallery--message" data-message="Загрузка...">
         <input type="file" class="vision-photo-gallery__file-field" tabindex="-1">
         <div class="vision-photo-gallery__item vision-photo-gallery__item--main">
-          <h4 class="vision-photo-gallery__title">Основная фотография</h4>
           <div class="vg-main-photo"></div>
         </div>
         <div class="vision-photo-gallery__item">
-          <h4 class="vision-photo-gallery__title">Галерея</h4>
           <div class="vg-gallery"></div>
         </div>
       </div>
@@ -311,7 +377,7 @@ export default class VisionPhotoGallery {
     const galleryContainer = document.querySelector(".vision-photo-gallery");
     const mainPhotoContainer = rootElement.querySelector(".vg-main-photo");
     const gallery = rootElement.querySelector(".vg-gallery");
-    const { disableControls: isControlsDisabled } = this;
+    const { upload } = this.controls;
 
     this.getPhotos()
       .then(
@@ -322,23 +388,20 @@ export default class VisionPhotoGallery {
             photoId: null
           });
 
-          gallery.innerHTML = this.createPhotoElement({
-            main: false,
-            empty: true,
-            photoId: null
-          });
+          if (upload) {
+            gallery.innerHTML = this.createPhotoElement({
+              main: false,
+              empty: true,
+              photoId: null
+            });
+          }
 
           if (response.ok) {
             return response.json();
           } else {
-            mainPhotoContainer.innerHTML = this.createPhotoElement({
-              main: true,
-              empty: true,
-              photoId: null
-            });
+            mainPhotoContainer.innerHTML = this.createNoPhotoElement();
 
             galleryContainer.classList.remove("vision-photo-gallery--message");
-            mainPhotoContainer.parentElement.classList.add("hidden");
           }
 
           this.initEvents();
@@ -353,7 +416,11 @@ export default class VisionPhotoGallery {
       )
       .then(
         responseJson => {
-          if (!responseJson) {
+          if (!responseJson || !responseJson.length) {
+            mainPhotoContainer.innerHTML = this.createNoPhotoElement();
+            gallery.parentElement.classList.add("hidden");
+            galleryContainer.classList.remove("vision-photo-gallery--message");
+
             return;
           }
 
@@ -376,7 +443,7 @@ export default class VisionPhotoGallery {
                 (galleryPhotosHtml += this.createPhotoElement(photoData))
             );
 
-            if (!isControlsDisabled) {
+            if (upload) {
               galleryPhotosHtml += this.createPhotoElement({
                 main: false,
                 empty: true,
@@ -385,6 +452,8 @@ export default class VisionPhotoGallery {
             }
 
             gallery.innerHTML = galleryPhotosHtml;
+          } else if (!upload) {
+            gallery.parentElement.classList.add("hidden");
           }
 
           this.initEvents();
@@ -419,13 +488,13 @@ export default class VisionPhotoGallery {
    */
   static createPhotoElement(params) {
     const { photoId, main, empty, path, avatarUrl } = params;
-    const { disableControls: isControlsDisabled } = this;
+    const { disableAll, upload, update, remove } = this.controls;
     let buttons = "";
     let elementClasses = "";
     let backgroundImage = "";
     let mainAttribute = "";
 
-    if (path) {
+    if (!avatarUrl && path) {
       backgroundImage = `style="background-image: url(${path})"`;
     }
 
@@ -435,29 +504,31 @@ export default class VisionPhotoGallery {
 
     if (main) {
       mainAttribute = `data-main="${main}"`;
-    }
 
-    if (main && !empty) {
-      elementClasses = "vg-photo vg-photo--main";
-      buttons = `
-        <button class="vg-photo__button vg-button vg-button--red" data-action="remove-photo">Удалить</button>
-      `;
-    } else if (main && empty) {
-      elementClasses = "vg-photo vg-photo--main";
-      buttons = `
-        <button class="vg-photo__button vg-button" data-action="upload-photo">Загрузить</button>
-      `;
-    } else if (!main && empty) {
-      elementClasses = "vg-gallery__item vg-photo vg-photo--upload";
-      buttons = `
-        <button class="vg-photo__button vg-button vg-button--upload" data-action="upload-photo">&#43;</button>
-      `;
+      if (empty) {
+        elementClasses = "vg-photo vg-photo--main";
+        buttons = VisionPhotoGallery.getPhotoButtons({
+          upload
+        });
+      } else {
+        elementClasses = "vg-photo vg-photo--main";
+        buttons = VisionPhotoGallery.getPhotoButtons({
+          remove
+        });
+      }
     } else {
-      elementClasses = "vg-gallery__item vg-photo";
-      buttons = `
-        <button class="vg-photo__button vg-button vg-button--green" data-action="update-photo">Выбрать</button>
-        <button class="vg-photo__button vg-button vg-button--red" data-action="remove-photo">Удалить</button>
-      `;
+      if (empty) {
+        elementClasses = "vg-gallery__item vg-photo vg-photo--upload";
+        buttons = VisionPhotoGallery.getPhotoButtons({
+          uploadIcon: upload
+        });
+      } else {
+        elementClasses = "vg-gallery__item vg-photo";
+        buttons = VisionPhotoGallery.getPhotoButtons({
+          update,
+          remove
+        });
+      }
     }
 
     return `
@@ -465,9 +536,49 @@ export default class VisionPhotoGallery {
         ${backgroundImage}
         data-photo-id="${photoId}"
         ${mainAttribute}>
-        ${isControlsDisabled ? "" : buttons}
+        ${disableAll ? VisionPhotoGallery.prototype.noPhotoSvg : buttons}
         </div>
       `;
+  }
+
+  static createNoPhotoElement() {
+    return `
+      <div class="vg-photo vg-photo--main">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="-256 -256 1024 1024">
+          <path fill="#4a5266"
+            d="M437 310.8c-28.4-28.4-62.2-49.2-99.1-61.7 34.1-25.2 56.2-65.6 56.2-111.1C394.1 61.9 332.1 0 256 0S117.9 61.9 117.9 138.1c0 45.5 22.1 85.9 56.2 111.1 -36.9 12.4-70.8 33.3-99.1 61.7C26.6 359.2 0 423.5 0 491.8 0 503 9 512 20.2 512h471.7c11.1 0 20.2-9 20.2-20.2C512 423.5 485.4 359.2 437 310.8zM158.2 138.1c0-53.9 43.9-97.8 97.8-97.8 53.9 0 97.8 43.9 97.8 97.8 0 53.9-43.9 97.8-97.8 97.8C202.1 235.8 158.2 192 158.2 138.1zM41.2 471.7C51.4 362.2 143.9 276.2 256 276.2s204.6 86 214.8 195.5H41.2z"/>
+        </svg>
+      </div>
+    `;
+  }
+
+  /**
+   * Получить кнопку по передаваемым параметрам.
+   * @param params.disableAll {boolean} Отключить все кнопки.
+   * @param params.remove {boolean} Кнопка удаления.
+   * @param params.upload {boolean} Кнопка загрузки.
+   * @param params.uploadIcon {boolean} Кнопка загрузки в виде иконки.
+   * @param params.select {boolean} Кнопка выбора фотографии.
+   */
+  static getPhotoButtons(params) {
+    if (params.disableAll) {
+      return "";
+    }
+
+    const buttons = {
+      remove: `<button class="vg-photo__button vg-button vg-button--red" data-action="remove-photo">Удалить</button>`,
+      upload: `<button class="vg-photo__button vg-button" data-action="upload-photo">Загрузить</button>`,
+      uploadIcon: `<button class="vg-photo__button vg-button vg-button--upload" data-action="upload-photo">&#43;</button>`,
+      update: `<button class="vg-photo__button vg-button vg-button--green" data-action="update-photo">Выбрать</button>`
+    };
+
+    return Object.keys(params).reduce((buttonsString, key) => {
+      if (params[key]) {
+        buttonsString += buttons[key];
+      }
+
+      return buttonsString;
+    }, "");
   }
 
   /**
@@ -569,7 +680,7 @@ export default class VisionPhotoGallery {
       const { photoId } = photoElement.dataset;
 
       if (!!photoId) {
-        this.updatePhoto(+photoId).then(
+        this.setAsMainPhoto(+photoId).then(
           response => {
             if (response.ok) {
               this.draw();
