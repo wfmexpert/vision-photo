@@ -536,7 +536,7 @@ export default class VisionPhotoGallery {
         ${backgroundImage}
         data-photo-id="${photoId}"
         ${mainAttribute}>
-        ${disableAll ? VisionPhotoGallery.prototype.noPhotoSvg : buttons}
+        ${disableAll ? "" : buttons}
         </div>
       `;
   }
