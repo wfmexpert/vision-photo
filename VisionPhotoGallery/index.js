@@ -6,6 +6,7 @@ import "./app.scss";
  * Класс галереи.
  */
 export default class VisionPhotoGallery {
+  static galleryContainer = null;
   static employeeId = null;
   static visionPersonId = null;
   static rootElement = null;
@@ -33,14 +34,14 @@ export default class VisionPhotoGallery {
    * @param masterAlbum {boolean} Загрузка фотографий из мастер-албома.
    */
   constructor({
-    root,
-    employeeId,
-    visionPersonId,
-    personId,
-    token,
-    controls,
-    masterAlbum = true
-  }) {
+                root,
+                employeeId,
+                visionPersonId,
+                personId,
+                token,
+                controls,
+                masterAlbum = true
+              }) {
     if (!root) {
       throw new Error("Не указан ID корневого элемента для галереи!");
     }
@@ -95,7 +96,7 @@ export default class VisionPhotoGallery {
    * @param employeeId {number|number} ID сотрудника.
    * @param token {string} CSRF-токен сесси пользователя.
    */
-  static update({ employeeId, token }) {
+  static update({employeeId, token}) {
     this.employeeId = employeeId;
     this.token = token;
 
@@ -223,7 +224,7 @@ export default class VisionPhotoGallery {
    * @param params.blockingErrorMessage {string} Блокирующее поток сообщение об ошибке.
    */
   static handleError(params) {
-    const { message, blockingErrorMessage } = params;
+    const {message, blockingErrorMessage} = params;
 
     if (this.errorFunction) {
       let messageString = "";
@@ -258,7 +259,7 @@ export default class VisionPhotoGallery {
    * @param requestBody {object} Параметры запроса.
    * @returns {Promise<Response>} Промис запроса.
    */
-  static request({ requestPath, requestBody }) {
+  static request({requestPath, requestBody}) {
     const requestDefaults = {
       method: "POST",
       mode: "same-origin",
@@ -303,6 +304,8 @@ export default class VisionPhotoGallery {
    * @returns {Promise<Response>} Промис с результатом выполнения запроса.
    */
   static addPhoto(image) {
+    this.toggleOverlayMessage('Загрузка...');
+
     return this.request({
       requestPath: "add_photo",
       requestBody: {
@@ -318,6 +321,8 @@ export default class VisionPhotoGallery {
    * @returns {Promise<Response>} Промис с результатом выполнения запроса.
    */
   static deletePhoto(photoId) {
+    this.toggleOverlayMessage('Удаление фотографии...');
+
     return this.request({
       requestPath: "delete_photo",
       requestBody: {
@@ -332,6 +337,8 @@ export default class VisionPhotoGallery {
    * @returns {Promise<Response>} Промис с результатом выполнения запроса.
    */
   static updatePhoto(photoId) {
+    this.toggleOverlayMessage('Обновление фотографии...');
+
     return this.request({
       requestPath: "update_photo",
       requestBody: {
@@ -347,6 +354,8 @@ export default class VisionPhotoGallery {
    * @returns {Promise<Response>} Промис с результатом выполнения запроса.
    */
   static setAsMainPhoto(photoId) {
+    this.toggleOverlayMessage('Обновление основной фотографии...');
+
     return this.request({
       requestPath: "set_main_photo",
       requestBody: {
@@ -357,13 +366,33 @@ export default class VisionPhotoGallery {
   }
 
   /**
+   * Переключатель блокирующего сообщения.
+   * @param message {string|undefined|null} Сообщение.
+   */
+  static toggleOverlayMessage(message = null) {
+    const {galleryContainer} = this;
+
+    if (!galleryContainer) {
+      throw new Error('Не найдена корневой элемент галереи');
+    }
+
+    if (message) {
+      galleryContainer.dataset.message = message;
+      galleryContainer.classList.add('vision-photo-gallery--message');
+    } else {
+      galleryContainer.classList.remove('vision-photo-gallery--message');
+      galleryContainer.dataset.message = '';
+    }
+  }
+
+  /**
    * Отрисовка DOM галереии.
    */
   static draw() {
     const rootElement = this.rootElement;
 
     rootElement.innerHTML = `
-      <div class="vision-photo-gallery vision-photo-gallery--message" data-message="Загрузка...">
+      <div class="vision-photo-gallery">
         <input type="file" class="vision-photo-gallery__file-field" tabindex="-1">
         <div class="vision-photo-gallery__item vision-photo-gallery__item--main">
           <div class="vg-main-photo"></div>
@@ -375,9 +404,13 @@ export default class VisionPhotoGallery {
     `;
 
     const galleryContainer = document.querySelector(".vision-photo-gallery");
+
+    this.galleryContainer = galleryContainer;
+    this.toggleOverlayMessage('Загрузка...');
+
     const mainPhotoContainer = rootElement.querySelector(".vg-main-photo");
     const gallery = rootElement.querySelector(".vg-gallery");
-    const { upload } = this.controls;
+    const {upload} = this.controls;
 
     this.getPhotos()
       .then(
@@ -400,17 +433,16 @@ export default class VisionPhotoGallery {
             return response.json();
           } else {
             mainPhotoContainer.innerHTML = this.createNoPhotoElement();
-
-            galleryContainer.classList.remove("vision-photo-gallery--message");
           }
 
           this.initEvents();
+          this.toggleOverlayMessage();
         },
         error => {
+          this.toggleOverlayMessage();
           this.handleError({
             message: error
           });
-
           this.initEvents();
         }
       )
@@ -419,13 +451,13 @@ export default class VisionPhotoGallery {
           if (!responseJson || !responseJson.length) {
             mainPhotoContainer.innerHTML = this.createNoPhotoElement();
             gallery.parentElement.classList.add("hidden");
-            galleryContainer.classList.remove("vision-photo-gallery--message");
+            this.toggleOverlayMessage();
 
             return;
           }
 
-          const mainPhotoData = responseJson.find(({ main }) => main);
-          const galleryPhotosData = responseJson.filter(({ main }) => !main);
+          const mainPhotoData = responseJson.find(({main}) => main);
+          const galleryPhotosData = responseJson.filter(({main}) => !main);
 
           if (!!mainPhotoData) {
             mainPhotoContainer.innerHTML = this.createPhotoElement(
@@ -457,17 +489,18 @@ export default class VisionPhotoGallery {
           }
 
           this.initEvents();
-          galleryContainer.classList.remove("vision-photo-gallery--message");
+          this.toggleOverlayMessage();
         },
         error => {
           this.handleError({
             message: error
           });
-
+          this.toggleOverlayMessage();
           this.initEvents();
         }
       )
       .catch(error => {
+        this.toggleOverlayMessage();
         this.handleError({
           message: error
         });
@@ -487,8 +520,8 @@ export default class VisionPhotoGallery {
    * @returns {string} Элемент фотографии в виде строки.
    */
   static createPhotoElement(params) {
-    const { photoId, main, empty, path, avatarUrl } = params;
-    const { disableAll, upload, update, remove } = this.controls;
+    const {photoId, main, empty, path, avatarUrl} = params;
+    const {disableAll, upload, update, remove} = this.controls;
     let buttons = "";
     let elementClasses = "";
     let backgroundImage = "";
@@ -585,7 +618,7 @@ export default class VisionPhotoGallery {
    * Инициализация событий для кнопок галереи.
    */
   static initEvents() {
-    const { rootElement } = this;
+    const {rootElement} = this;
     const buttons = rootElement.querySelectorAll("button");
 
     buttons.forEach(button => {
@@ -604,9 +637,9 @@ export default class VisionPhotoGallery {
   static router = {
     /**
      * Загрузка фотографии сотрудника.
-     * @param e {Event} Событие.
+     * @param event {Event} Событие.
      */
-    "upload-photo": e => {
+    "upload-photo": event => {
       const fileInput = this.rootElement.querySelector('input[type="file"]');
 
       fileInput.addEventListener("change", this.router["file-input-changed"]);
@@ -614,10 +647,10 @@ export default class VisionPhotoGallery {
     },
     /**
      * Слушатель события изменения файлового поля ввода.
-     * @param e {event} Событие.
+     * @param event {event} Событие.
      */
-    "file-input-changed": e => {
-      const file = e.target.files[0];
+    "file-input-changed": event => {
+      const file = event.target.files[0];
       const reader = new FileReader();
 
       reader.readAsDataURL(file);
@@ -648,11 +681,11 @@ export default class VisionPhotoGallery {
     },
     /**
      * Запрос на удаление фотографии сотрудника.
-     * @param e {Event} Событие.
+     * @param event {Event} Событие.
      */
-    "remove-photo": e => {
-      const photoElement = e.target.closest(".vg-photo");
-      const { photoId } = photoElement.dataset;
+    "remove-photo": event => {
+      const photoElement = event.target.closest(".vg-photo");
+      const {photoId} = photoElement.dataset;
 
       if (!!photoId) {
         this.deletePhoto(+photoId).then(
@@ -673,13 +706,16 @@ export default class VisionPhotoGallery {
     },
     /**
      * Запрос на обновление фотографии сотрудника.
-     * @param e {Event} Событие.
+     * @param event {Event} Событие.
      */
-    "update-photo": e => {
-      const photoElement = e.target.closest(".vg-photo");
-      const { photoId } = photoElement.dataset;
+    "update-photo": event => {
+      const photoElement = event.target.closest(".vg-photo");
+      const {photoId} = photoElement.dataset;
+      const buttons = photoElement.querySelectorAll('button');
 
       if (!!photoId) {
+        buttons.forEach(button => button.setAttribute('disabled', 'disabled'));
+
         this.setAsMainPhoto(+photoId).then(
           response => {
             if (response.ok) {
