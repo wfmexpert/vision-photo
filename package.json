@@ -10,6 +10,7 @@
   "type": "module",
   "main": "dist/VisionPhotoGallery.js",
   "module": "VisionPhotoGallery/index.js",
+  "entry": ["whatwg-fetch"],
   "private": false,
   "repository": {
     "type": "git",
@@ -54,5 +55,8 @@
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com"
+  },
+  "dependencies": {
+    "whatwg-fetch": "^3.6.2"
   }
 }

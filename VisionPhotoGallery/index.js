@@ -1,6 +1,7 @@
 "use strict";
 
 import "./app.scss";
+import 'whatwg-fetch';
 
 /**
  * Класс галереи.

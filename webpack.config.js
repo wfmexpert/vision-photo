@@ -1,12 +1,13 @@
 'use strict';
 
-const path = require('path');
+import path from 'path';
+const __dirname = path.resolve();
 // Webpack plugins
-const HTMLWebpackPlugin = require('html-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+import HtmlWebpackPlugin from "html-webpack-plugin";
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import {CleanWebpackPlugin} from "clean-webpack-plugin";
 
-module.exports = {
+export default {
     entry: './VisionPhotoGallery/index.js',
     devServer: {
         contentBase: path.resolve(__dirname, 'dist'),
@@ -33,7 +34,7 @@ module.exports = {
         new CleanWebpackPlugin({
             cleanStaleWebpackAssets: false,
         }),
-        new HTMLWebpackPlugin({
+        new HtmlWebpackPlugin({
             inject: 'body',
             templateContent: `
                 <html>
