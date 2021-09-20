@@ -7,18 +7,16 @@ import 'whatwg-fetch';
  * Класс галереи.
  */
 export default class VisionPhotoGallery {
-  static galleryContainer = null;
-  static employeeId = null;
-  static visionPersonId = null;
-  static rootElement = null;
-  static token = null;
-  static controls = {
+  galleryContainer = null;
+  rootElement = null;
+  token = null;
+  controls = {
     disableAll: false,
     update: true,
     upload: true,
     remove: true
   };
-  static masterAlbum = true;
+  masterAlbum = true;
 
   /**
    * Конструктор экземпляра класса галереи.
@@ -50,7 +48,7 @@ export default class VisionPhotoGallery {
     const rootElement = document.getElementById(root);
 
     if (!!rootElement) {
-      VisionPhotoGallery.rootElement = rootElement;
+      this.rootElement = rootElement;
     } else {
       throw new Error("Проверьте указанный ID корневого элемента для галереи!");
     }
@@ -59,6 +57,12 @@ export default class VisionPhotoGallery {
       throw new Error("Не указан ID пользователя на портале Vision");
     }
 
+    this.employee = {
+      id: null,
+      personId: null,
+      visionPersonId: null,
+    };
+
     this.employeeId = employeeId;
     this.visionPersonId = visionPersonId;
     this.personId = personId;
@@ -66,20 +70,20 @@ export default class VisionPhotoGallery {
     this.controls = controls;
     this.masterAlbum = masterAlbum;
 
-    VisionPhotoGallery.draw();
+    this.draw();
   }
 
   /**
    * Назначаемый метод для отображения ошибок.
    * @type {null|Function} Функция обработчик отображения ошибок.
    */
-  static errorFunction = null;
+  errorFunction = null;
   /**
    * Получение метода для отображения ошибок.
    * @type {null|Function} Функция обработчик отображения ошибок.
    */
   get errorFunction() {
-    return VisionPhotoGallery.errorFunction;
+    return this.errorFunction;
   }
 
   /**
@@ -88,7 +92,7 @@ export default class VisionPhotoGallery {
    */
   set errorFunction(errorFunction) {
     if (errorFunction) {
-      VisionPhotoGallery.errorFunction = errorFunction;
+      this.errorFunction = errorFunction;
     }
   }
 
@@ -97,7 +101,7 @@ export default class VisionPhotoGallery {
    * @param employeeId {number|number} ID сотрудника.
    * @param token {string} CSRF-токен сесси пользователя.
    */
-  static update({employeeId, token}) {
+  update({employeeId, token}) {
     this.employeeId = employeeId;
     this.token = token;
 
@@ -109,7 +113,7 @@ export default class VisionPhotoGallery {
    * @return {number|string} ID сотрудника.
    */
   get employeeId() {
-    return VisionPhotoGallery.employeeId;
+    return this.employee.id;
   }
 
   /**
@@ -118,7 +122,7 @@ export default class VisionPhotoGallery {
    */
   set employeeId(employeeId) {
     if (employeeId) {
-      VisionPhotoGallery.employeeId = employeeId;
+      this.employee.id = employeeId;
     }
   }
 
@@ -127,7 +131,7 @@ export default class VisionPhotoGallery {
    * @return {number|string} ID сотрудника аутсорсера.
    */
   get visionPersonId() {
-    return VisionPhotoGallery.visionPersonId;
+    return this.employee.visionPersonId;
   }
 
   /**
@@ -136,7 +140,7 @@ export default class VisionPhotoGallery {
    */
   set visionPersonId(visionPersonId) {
     if (visionPersonId) {
-      VisionPhotoGallery.visionPersonId = visionPersonId;
+      this.employee.visionPersonId = visionPersonId;
     }
   }
 
@@ -145,7 +149,7 @@ export default class VisionPhotoGallery {
    * @return {number|string} ID сотрудника аутсорсера.
    */
   get personId() {
-    return VisionPhotoGallery.personId;
+    return this.employee.personId;
   }
 
   /**
@@ -154,7 +158,7 @@ export default class VisionPhotoGallery {
    */
   set personId(personId) {
     if (personId) {
-      VisionPhotoGallery.personId = personId;
+      this.employee.personId = personId;
     }
   }
 
@@ -163,7 +167,7 @@ export default class VisionPhotoGallery {
    * @return {null|Element} Корневой элемент для рендера.
    */
   get rootElement() {
-    return VisionPhotoGallery.rootElement;
+    return this.rootElement;
   }
 
   /**
@@ -171,7 +175,7 @@ export default class VisionPhotoGallery {
    * @return {null|string} CSRF-токен сессии пользователя.
    */
   get token() {
-    return VisionPhotoGallery.token;
+    return this.token;
   }
 
   /**
@@ -180,7 +184,7 @@ export default class VisionPhotoGallery {
    */
   set token(token) {
     if (token) {
-      VisionPhotoGallery.token = token;
+      this.token = token;
     }
   }
 
@@ -189,7 +193,7 @@ export default class VisionPhotoGallery {
    * @return {boolean} Состояние контролов.
    */
   get controls() {
-    return VisionPhotoGallery.controls;
+    return this.controls;
   }
 
   /**
@@ -197,8 +201,8 @@ export default class VisionPhotoGallery {
    * @param value {boolean} Включить/отключить контролы.
    */
   set controls(value) {
-    VisionPhotoGallery.controls = {
-      ...VisionPhotoGallery.controls,
+    this.controls = {
+      ...this.controls,
       ...value
     };
   }
@@ -208,7 +212,7 @@ export default class VisionPhotoGallery {
    * @return {boolean} Состояние флага загрузки фотографий из мастер-альбома.
    */
   get masterAlbum() {
-    return VisionPhotoGallery.masterAlbum;
+    return this.masterAlbum;
   }
 
   /**
@@ -216,7 +220,7 @@ export default class VisionPhotoGallery {
    * @param value {boolean} Включить/выключить загрузку из мастер-альбома.
    */
   set masterAlbum(value) {
-    VisionPhotoGallery.masterAlbum = value;
+    this.masterAlbum = value;
   }
 
   /**
@@ -224,7 +228,7 @@ export default class VisionPhotoGallery {
    * @param params.message {string} Сообщение об ошибке.
    * @param params.blockingErrorMessage {string} Блокирующее поток сообщение об ошибке.
    */
-  static handleError(params) {
+  handleError(params) {
     const {message, blockingErrorMessage} = params;
 
     if (this.errorFunction) {
@@ -260,7 +264,7 @@ export default class VisionPhotoGallery {
    * @param requestBody {object} Параметры запроса.
    * @returns {Promise<Response>} Промис запроса.
    */
-  static request({requestPath, requestBody}) {
+  request({requestPath, requestBody}) {
     const requestDefaults = {
       method: "POST",
       mode: "same-origin",
@@ -279,7 +283,7 @@ export default class VisionPhotoGallery {
    * Выгрузка всех фотографий с портала Vision.
    * @returns {Promise<Response>} Промис с результатом выполнения запроса.
    */
-  static getPhotos() {
+  getPhotos() {
     const employee = {};
 
     if (this.employeeId && !this.visionPersonId) {
@@ -304,7 +308,7 @@ export default class VisionPhotoGallery {
    * @param image {BufferEncoding} Фотографии в формате Base64.
    * @returns {Promise<Response>} Промис с результатом выполнения запроса.
    */
-  static addPhoto(image) {
+  addPhoto(image) {
     this.toggleOverlayMessage('Загрузка...');
 
     return this.request({
@@ -321,7 +325,7 @@ export default class VisionPhotoGallery {
    * @param photoId {Number} ID фотографии на портале Vision.
    * @returns {Promise<Response>} Промис с результатом выполнения запроса.
    */
-  static deletePhoto(photoId) {
+  deletePhoto(photoId) {
     this.toggleOverlayMessage('Удаление фотографии...');
 
     return this.request({
@@ -337,7 +341,7 @@ export default class VisionPhotoGallery {
    * @param photoId {Number} ID фотографии на портале Vision.
    * @returns {Promise<Response>} Промис с результатом выполнения запроса.
    */
-  static updatePhoto(photoId) {
+  updatePhoto(photoId) {
     this.toggleOverlayMessage('Обновление фотографии...');
 
     return this.request({
@@ -354,7 +358,7 @@ export default class VisionPhotoGallery {
    * @param photoId {Number} ID фотографии на портале Vision.
    * @returns {Promise<Response>} Промис с результатом выполнения запроса.
    */
-  static setAsMainPhoto(photoId) {
+  setAsMainPhoto(photoId) {
     this.toggleOverlayMessage('Обновление основной фотографии...');
 
     return this.request({
@@ -370,7 +374,7 @@ export default class VisionPhotoGallery {
    * Переключатель блокирующего сообщения.
    * @param message {string|undefined|null} Сообщение.
    */
-  static toggleOverlayMessage(message = null) {
+  toggleOverlayMessage(message = null) {
     const {galleryContainer} = this;
 
     if (!galleryContainer) {
@@ -389,7 +393,7 @@ export default class VisionPhotoGallery {
   /**
    * Отрисовка DOM галереии.
    */
-  static draw() {
+  draw() {
     const rootElement = this.rootElement;
 
     rootElement.innerHTML = `
@@ -520,7 +524,7 @@ export default class VisionPhotoGallery {
    * @param params.avatarUrl {string} Путь к фотографии.
    * @returns {string} Элемент фотографии в виде строки.
    */
-  static createPhotoElement(params) {
+  createPhotoElement(params) {
     const {photoId, main, empty, path, avatarUrl} = params;
     const {disableAll, upload, update, remove} = this.controls;
     let buttons = "";
@@ -541,24 +545,24 @@ export default class VisionPhotoGallery {
 
       if (empty) {
         elementClasses = "vg-photo vg-photo--main";
-        buttons = VisionPhotoGallery.getPhotoButtons({
+        buttons = this.getPhotoButtons({
           upload
         });
       } else {
         elementClasses = "vg-photo vg-photo--main";
-        buttons = VisionPhotoGallery.getPhotoButtons({
+        buttons = this.getPhotoButtons({
           remove
         });
       }
     } else {
       if (empty) {
         elementClasses = "vg-gallery__item vg-photo vg-photo--upload";
-        buttons = VisionPhotoGallery.getPhotoButtons({
+        buttons = this.getPhotoButtons({
           uploadIcon: upload
         });
       } else {
         elementClasses = "vg-gallery__item vg-photo";
-        buttons = VisionPhotoGallery.getPhotoButtons({
+        buttons = this.getPhotoButtons({
           update,
           remove
         });
@@ -575,7 +579,7 @@ export default class VisionPhotoGallery {
       `;
   }
 
-  static createNoPhotoElement() {
+  createNoPhotoElement() {
     return `
       <div class="vg-photo vg-photo--main">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="-256 -256 1024 1024">
@@ -594,7 +598,7 @@ export default class VisionPhotoGallery {
    * @param params.uploadIcon {boolean} Кнопка загрузки в виде иконки.
    * @param params.select {boolean} Кнопка выбора фотографии.
    */
-  static getPhotoButtons(params) {
+  getPhotoButtons(params) {
     if (params.disableAll) {
       return "";
     }
@@ -618,7 +622,7 @@ export default class VisionPhotoGallery {
   /**
    * Инициализация событий для кнопок галереи.
    */
-  static initEvents() {
+  initEvents() {
     const {rootElement} = this;
     const buttons = rootElement.querySelectorAll("button");
 
@@ -635,7 +639,7 @@ export default class VisionPhotoGallery {
    * Роутер.
    * @type {{"remove-photo": function(*): void, "file-input-changed": function(*): void, "upload-photo": function(*): void, "update-photo": function(*): void}}
    */
-  static router = {
+  router = {
     /**
      * Загрузка фотографии сотрудника.
      * @param event {Event} Событие.
