@@ -328,9 +328,12 @@ export default class VisionPhotoGallery {
   deletePhoto(photoId) {
     this.toggleOverlayMessage('Удаление фотографии...');
 
+    const employeeId = this.employeeId;
+
     return this.request({
       requestPath: "delete_photo",
       requestBody: {
+        employee_id: employeeId,
         photo_id: photoId
       }
     });
@@ -526,7 +529,7 @@ export default class VisionPhotoGallery {
    */
   createPhotoElement(params) {
     const {photoId, main, empty, path, avatarUrl} = params;
-    const {disableAll, upload, update, remove} = this.controls;
+    const {disableAll, upload, update, remove = !empty} = this.controls;
     let buttons = "";
     let elementClasses = "";
     let backgroundImage = "";
@@ -579,6 +582,10 @@ export default class VisionPhotoGallery {
       `;
   }
 
+  /**
+   * Шаблон элемента галереи без фотографии
+   * @return {string} HTML DOM String
+   */
   createNoPhotoElement() {
     return `
       <div class="vg-photo vg-photo--main">
