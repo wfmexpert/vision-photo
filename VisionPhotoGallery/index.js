@@ -290,9 +290,9 @@ export default class VisionPhotoGallery {
    // * @param params.actionCode {string} Код действия (36 - добавление фото, 37 - удаление фото).
    // * @param params.actionDescription {object} параметры лога
    */
-  handleSuccess(action, actionDescription) {
+  handleSuccess(params) {
     if(this.successFunction) {
-      this.successFunction(action, actionDescription);
+      this.successFunction(params);
     }
   }
 
@@ -533,24 +533,14 @@ export default class VisionPhotoGallery {
           } else if (!upload) {
             gallery.parentElement.classList.add("hidden");
           }
-
-          let actionValue = {};
-
-          if(params.action === 'PHOTO_BIOMETRY_ADD') {
-            actionValue = {
-              add_photo_type: params.actionType ? params.actionType : this.actionType,
-              main_photo_replaced: responseJson.length > 0,
-            }
-          } else if (params.action === 'PHOTO_BIOMETRY_REMOVE') {
-            actionValue = {
-              main_photo: params.isMainPhoto,
-            }
+          const successParams = {
+            ...params,
+            photos: responseJson,
           }
-
 
           this.initEvents();
           this.toggleOverlayMessage();
-          this.handleSuccess(params.action, actionValue);
+          this.handleSuccess(successParams);
         },
         error => {
           this.handleError({
@@ -724,7 +714,7 @@ export default class VisionPhotoGallery {
         this.addPhoto(reader.result).then(
           response => {
             if (response.ok) {
-              this.draw({action: 'PHOTO_BIOMETRY_ADD', actionType: 'upload_photo'});
+              this.draw({action: 'PHOTO_ADD', actionType: 'upload_photo'});
             } else if (response.status !== 200) {
               return response.json();
             }
@@ -757,7 +747,7 @@ export default class VisionPhotoGallery {
         this.deletePhoto(+photoId).then(
           response => {
             if (response.ok) {
-              this.draw({action: 'PHOTO_BIOMETRY_REMOVE', isMainPhoto});
+              this.draw({action: 'PHOTO_REMOVE', isMainPhoto});
             } else if (response.status !== 200) {
               return response.json();
             }
@@ -785,7 +775,7 @@ export default class VisionPhotoGallery {
         this.setAsMainPhoto(+photoId).then(
           response => {
             if (response.ok) {
-              this.draw({action: 'PHOTO_BIOMETRY_ADD', actionType: 'photo_album'});
+              this.draw({action: 'PHOTO_ADD', actionType: 'photo_album'});
             } else if (response.status !== 200) {
               return response.json();
             }
