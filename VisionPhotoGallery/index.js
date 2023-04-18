@@ -17,9 +17,11 @@ export default class VisionPhotoGallery {
     remove: true
   };
   masterAlbum = true;
+  actionType = '';
 
   /**
    * Конструктор экземпляра класса галереи.
+   * @param actionType {string} тип события, вызвавшего инициализацию галереи
    * @param root {string} ID корневого элемента, куда будет рендериться галерея.
    * @param employeeId {number|string} ID сотрудника.
    * @param visionPersonId {number|string} ID сотрудника аутсорсера.
@@ -33,6 +35,7 @@ export default class VisionPhotoGallery {
    * @param masterAlbum {boolean} Загрузка фотографий из мастер-албома.
    */
   constructor({
+                actionType,
                 root,
                 employeeId,
                 visionPersonId,
@@ -57,6 +60,10 @@ export default class VisionPhotoGallery {
       throw new Error("Не указан ID пользователя на портале Vision");
     }
 
+    if(actionType) {
+      this.actionType = actionType;
+    }
+
     this.employee = {
       id: null,
       personId: null,
@@ -78,6 +85,8 @@ export default class VisionPhotoGallery {
    * @type {null|Function} Функция обработчик отображения ошибок.
    */
   errorFunction = null;
+  successFunction = null;
+
   /**
    * Получение метода для отображения ошибок.
    * @type {null|Function} Функция обработчик отображения ошибок.
@@ -93,6 +102,24 @@ export default class VisionPhotoGallery {
   set errorFunction(errorFunction) {
     if (errorFunction) {
       this.errorFunction = errorFunction;
+    }
+  }
+
+  /**
+   * Получение метода для обработки успешного добавления/удаления фотографии.
+   * @type {null|Function} Функция обработчик успешного добавления/удаления фотографии.
+   */
+  get successFunction() {
+    return this.successFunction;
+  }
+
+  /**
+   * Назначение метода для обработки успешного добавления/удаления фотографии.
+   * @param successFunction {null|Function} Функция обработчик обработки успешного добавления/удаления фотографии.
+   */
+  set successFunction(successFunction) {
+    if (successFunction) {
+      this.successFunction = successFunction;
     }
   }
 
@@ -259,6 +286,17 @@ export default class VisionPhotoGallery {
   }
 
   /**
+   * Обработчик успешного добавления/удаления фотографии.
+   // * @param params.actionCode {string} Код действия (36 - добавление фото, 37 - удаление фото).
+   // * @param params.actionDescription {object} параметры лога
+   */
+  handleSuccess(action, actionDescription) {
+    if(this.successFunction) {
+      this.successFunction(action, actionDescription);
+    }
+  }
+
+  /**
    * Обёртка для запросов к API.
    * @param requestPath {string} Название метода API.
    * @param requestBody {object} Параметры запроса.
@@ -396,7 +434,7 @@ export default class VisionPhotoGallery {
   /**
    * Отрисовка DOM галереии.
    */
-  draw() {
+  draw(params) {
     const rootElement = this.rootElement;
 
     rootElement.innerHTML = `
@@ -496,8 +534,23 @@ export default class VisionPhotoGallery {
             gallery.parentElement.classList.add("hidden");
           }
 
+          let actionValue = {};
+
+          if(params.action === 'PHOTO_BIOMETRY_ADD') {
+            actionValue = {
+              add_photo_type: params.actionType ? params.actionType : this.actionType,
+              main_photo_replaced: responseJson.length > 0,
+            }
+          } else if (params.action === 'PHOTO_BIOMETRY_REMOVE') {
+            actionValue = {
+              main_photo: params.isMainPhoto,
+            }
+          }
+
+
           this.initEvents();
           this.toggleOverlayMessage();
+          this.handleSuccess(params.action, actionValue);
         },
         error => {
           this.handleError({
@@ -671,7 +724,7 @@ export default class VisionPhotoGallery {
         this.addPhoto(reader.result).then(
           response => {
             if (response.ok) {
-              this.draw();
+              this.draw({action: 'PHOTO_BIOMETRY_ADD', actionType: 'upload_photo'});
             } else if (response.status !== 200) {
               return response.json();
             }
@@ -698,12 +751,13 @@ export default class VisionPhotoGallery {
     "remove-photo": event => {
       const photoElement = event.target.closest(".vg-photo");
       const {photoId} = photoElement.dataset;
+      const isMainPhoto = photoElement.classList.contains('vg-photo--main');
 
       if (!!photoId) {
         this.deletePhoto(+photoId).then(
           response => {
             if (response.ok) {
-              this.draw();
+              this.draw({action: 'PHOTO_BIOMETRY_REMOVE', isMainPhoto});
             } else if (response.status !== 200) {
               return response.json();
             }
@@ -731,7 +785,7 @@ export default class VisionPhotoGallery {
         this.setAsMainPhoto(+photoId).then(
           response => {
             if (response.ok) {
-              this.draw();
+              this.draw({action: 'PHOTO_BIOMETRY_ADD', actionType: 'photo_album'});
             } else if (response.status !== 200) {
               return response.json();
             }
