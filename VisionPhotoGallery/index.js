@@ -17,11 +17,9 @@ export default class VisionPhotoGallery {
     remove: true
   };
   masterAlbum = true;
-  actionType = '';
 
   /**
    * Конструктор экземпляра класса галереи.
-   * @param actionType {string} тип события, вызвавшего инициализацию галереи
    * @param root {string} ID корневого элемента, куда будет рендериться галерея.
    * @param employeeId {number|string} ID сотрудника.
    * @param visionPersonId {number|string} ID сотрудника аутсорсера.
@@ -35,7 +33,6 @@ export default class VisionPhotoGallery {
    * @param masterAlbum {boolean} Загрузка фотографий из мастер-албома.
    */
   constructor({
-                actionType,
                 root,
                 employeeId,
                 visionPersonId,
@@ -58,10 +55,6 @@ export default class VisionPhotoGallery {
 
     if (!employeeId && !visionPersonId && !personId) {
       throw new Error("Не указан ID пользователя на портале Vision");
-    }
-
-    if(actionType) {
-      this.actionType = actionType;
     }
 
     this.employee = {
@@ -533,8 +526,9 @@ export default class VisionPhotoGallery {
           } else if (!upload) {
             gallery.parentElement.classList.add("hidden");
           }
+
           const successParams = {
-            ...params,
+            action: params.action || this.action,
             photos: responseJson,
           }
 
@@ -713,8 +707,13 @@ export default class VisionPhotoGallery {
       reader.onload = () => {
         this.addPhoto(reader.result).then(
           response => {
+            if(response.faultcode) {
+              this.handleError({
+                message: response,
+              })
+            }
             if (response.ok) {
-              this.draw({action: 'PHOTO_ADD', actionType: 'upload_photo'});
+              this.draw({action: 'uploadPhoto'});
             } else if (response.status !== 200) {
               return response.json();
             }
@@ -747,7 +746,7 @@ export default class VisionPhotoGallery {
         this.deletePhoto(+photoId).then(
           response => {
             if (response.ok) {
-              this.draw({action: 'PHOTO_REMOVE', isMainPhoto});
+              this.draw({action: isMainPhoto ? 'photoRemove' : 'photoRemoveMain'});
             } else if (response.status !== 200) {
               return response.json();
             }
@@ -775,7 +774,7 @@ export default class VisionPhotoGallery {
         this.setAsMainPhoto(+photoId).then(
           response => {
             if (response.ok) {
-              this.draw({action: 'PHOTO_ADD', actionType: 'photo_album'});
+              this.draw({action: 'photoAlbum'});
             } else if (response.status !== 200) {
               return response.json();
             }
