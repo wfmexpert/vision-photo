@@ -280,8 +280,7 @@ export default class VisionPhotoGallery {
 
   /**
    * Обработчик успешного добавления/удаления фотографии.
-   // * @param params.actionCode {string} Код действия (36 - добавление фото, 37 - удаление фото).
-   // * @param params.actionDescription {object} параметры лога
+   // * @param params.action {string} название события
    */
   handleSuccess(params) {
     if(this.successFunction) {
@@ -427,7 +426,7 @@ export default class VisionPhotoGallery {
   /**
    * Отрисовка DOM галереии.
    */
-  draw(params) {
+  draw(params = {}) {
     const rootElement = this.rootElement;
 
     rootElement.innerHTML = `
@@ -528,7 +527,7 @@ export default class VisionPhotoGallery {
           }
 
           const successParams = {
-            action: params.action || this.action,
+            action: params.action,
             photos: responseJson,
           }
 
