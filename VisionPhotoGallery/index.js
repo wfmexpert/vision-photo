@@ -78,6 +78,8 @@ export default class VisionPhotoGallery {
    * @type {null|Function} Функция обработчик отображения ошибок.
    */
   errorFunction = null;
+  successFunction = null;
+
   /**
    * Получение метода для отображения ошибок.
    * @type {null|Function} Функция обработчик отображения ошибок.
@@ -93,6 +95,24 @@ export default class VisionPhotoGallery {
   set errorFunction(errorFunction) {
     if (errorFunction) {
       this.errorFunction = errorFunction;
+    }
+  }
+
+  /**
+   * Получение метода для обработки успешного добавления/удаления фотографии.
+   * @type {null|Function} Функция обработчик успешного добавления/удаления фотографии.
+   */
+  get successFunction() {
+    return this.successFunction;
+  }
+
+  /**
+   * Назначение метода для обработки успешного добавления/удаления фотографии.
+   * @param successFunction {null|Function} Функция обработчик обработки успешного добавления/удаления фотографии.
+   */
+  set successFunction(successFunction) {
+    if (successFunction) {
+      this.successFunction = successFunction;
     }
   }
 
@@ -259,6 +279,17 @@ export default class VisionPhotoGallery {
   }
 
   /**
+   * Обработчик успешного добавления/удаления фотографии.
+   // * @param params.actionCode {string} Код действия (36 - добавление фото, 37 - удаление фото).
+   // * @param params.actionDescription {object} параметры лога
+   */
+  handleSuccess(params) {
+    if(this.successFunction) {
+      this.successFunction(params);
+    }
+  }
+
+  /**
    * Обёртка для запросов к API.
    * @param requestPath {string} Название метода API.
    * @param requestBody {object} Параметры запроса.
@@ -396,7 +427,7 @@ export default class VisionPhotoGallery {
   /**
    * Отрисовка DOM галереии.
    */
-  draw() {
+  draw(params) {
     const rootElement = this.rootElement;
 
     rootElement.innerHTML = `
@@ -496,8 +527,14 @@ export default class VisionPhotoGallery {
             gallery.parentElement.classList.add("hidden");
           }
 
+          const successParams = {
+            action: params.action || this.action,
+            photos: responseJson,
+          }
+
           this.initEvents();
           this.toggleOverlayMessage();
+          this.handleSuccess(successParams);
         },
         error => {
           this.handleError({
@@ -670,8 +707,13 @@ export default class VisionPhotoGallery {
       reader.onload = () => {
         this.addPhoto(reader.result).then(
           response => {
+            if(response.faultcode) {
+              this.handleError({
+                message: response,
+              })
+            }
             if (response.ok) {
-              this.draw();
+              this.draw({action: 'uploadPhoto'});
             } else if (response.status !== 200) {
               return response.json();
             }
@@ -698,12 +740,13 @@ export default class VisionPhotoGallery {
     "remove-photo": event => {
       const photoElement = event.target.closest(".vg-photo");
       const {photoId} = photoElement.dataset;
+      const isMainPhoto = photoElement.classList.contains('vg-photo--main');
 
       if (!!photoId) {
         this.deletePhoto(+photoId).then(
           response => {
             if (response.ok) {
-              this.draw();
+              this.draw({action: isMainPhoto ? 'photoRemove' : 'photoRemoveMain'});
             } else if (response.status !== 200) {
               return response.json();
             }
@@ -731,7 +774,7 @@ export default class VisionPhotoGallery {
         this.setAsMainPhoto(+photoId).then(
           response => {
             if (response.ok) {
-              this.draw();
+              this.draw({action: 'photoAlbum'});
             } else if (response.status !== 200) {
               return response.json();
             }
