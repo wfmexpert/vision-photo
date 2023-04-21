@@ -486,10 +486,19 @@ export default class VisionPhotoGallery {
       )
       .then(
         responseJson => {
+          const successParams = {
+            action: params.action,
+            photos: responseJson,
+          };
+
           if (!responseJson || !responseJson.length) {
             mainPhotoContainer.innerHTML = this.createNoPhotoElement();
             gallery.parentElement.classList.add("hidden");
             this.toggleOverlayMessage();
+
+            if (params.action === 'photoRemoveMain') {
+              this.handleSuccess(successParams);
+            }
 
             return;
           }
@@ -524,11 +533,6 @@ export default class VisionPhotoGallery {
             gallery.innerHTML = galleryPhotosHtml;
           } else if (!upload) {
             gallery.parentElement.classList.add("hidden");
-          }
-
-          const successParams = {
-            action: params.action,
-            photos: responseJson,
           }
 
           this.initEvents();
@@ -709,7 +713,7 @@ export default class VisionPhotoGallery {
             if(response.faultcode) {
               this.handleError({
                 message: response,
-              })
+              });
             }
             if (response.ok) {
               this.draw({action: 'uploadPhoto'});
@@ -744,8 +748,12 @@ export default class VisionPhotoGallery {
       if (!!photoId) {
         this.deletePhoto(+photoId).then(
           response => {
-            if (response.ok) {
-              this.draw({action: isMainPhoto ? 'photoRemove' : 'photoRemoveMain'});
+            if (response.faultcode) {
+              this.handleError({
+                message: response,
+              });
+            } else if (response.ok) {
+              this.draw({action: isMainPhoto ? 'photoRemoveMain' : 'photoRemove'});
             } else if (response.status !== 200) {
               return response.json();
             }
