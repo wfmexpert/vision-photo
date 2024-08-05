@@ -249,13 +249,15 @@ export default class VisionPhotoGallery {
    * @param params.blockingErrorMessage {string} Блокирующее поток сообщение об ошибке.
    */
   handleError(params) {
-    const {message, blockingErrorMessage} = params;
+    const {message={}, blockingErrorMessage} = params;
 
     if (this.errorFunction) {
       let messageString = "";
 
       if (typeof message === "object") {
-        if (message.faultstring) {
+         if(message.detail?.errorMessage){
+           messageString = message.detail?.errorMessage;
+         } else  if (message.faultstring) {
           messageString = message.faultstring;
         } else {
           Object.keys(message)
@@ -708,25 +710,26 @@ export default class VisionPhotoGallery {
       reader.readAsDataURL(file);
 
       reader.onload = () => {
-        this.addPhoto(reader.result).then(
-          response => {
-            if(response.faultcode) {
-              this.handleError({
-                message: response,
-              });
-            }
+        this.addPhoto(reader.result)
+            .then(response => {
             if (response.ok) {
               this.draw({action: 'uploadPhoto'});
             } else if (response.status !== 200) {
               return response.json();
             }
-          },
+          })
+            .then(
           error => {
+            if(!error) {
+              return;
+            }
+
             this.handleError({
               message: error
             });
           }
-        );
+        )
+            .finally( () => this.toggleOverlayMessage());
       };
 
       reader.onerror = () => {
