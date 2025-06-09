@@ -255,7 +255,9 @@ export default class VisionPhotoGallery {
       let messageString = "";
 
       if (typeof message === "object") {
-         if(message.detail?.errorMessage){
+        if(message?.errors?.first?.errorMessage){
+          messageString = message?.errors?.first?.errorMessage;
+        }else if(message.detail?.errorMessage){
            messageString = message.detail?.errorMessage;
          } else  if (message.faultstring) {
           messageString = message.faultstring;
