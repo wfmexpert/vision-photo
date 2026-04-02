@@ -760,7 +760,15 @@ export default class VisionPhotoGallery {
             } else if (response.ok) {
               this.draw({action: isMainPhoto ? 'photoRemoveMain' : 'photoRemove'});
             } else if (response.status !== 200) {
-              return response.json();
+              return response.json().then(res => {
+                const error = new Error(`HTTP ${response.status}`);
+
+                for (const key of ['detail', 'errors', 'statusCode']) {
+                  Object.defineProperty(error, key, { value: res[key] });
+                }
+
+                throw error;
+              });
             }
           },
           error => {
