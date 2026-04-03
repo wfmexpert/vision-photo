@@ -752,31 +752,28 @@ export default class VisionPhotoGallery {
 
       if (!!photoId) {
         this.deletePhoto(+photoId).then(
-          response => {
-            if (response.faultcode) {
-              this.handleError({
-                message: response,
-              });
-            } else if (response.ok) {
-              this.draw({action: isMainPhoto ? 'photoRemoveMain' : 'photoRemove'});
-            } else if (response.status !== 200) {
-              return response.json().then(res => {
-                const error = new Error(`HTTP ${response.status}`);
-
-                for (const key of ['detail', 'errors', 'statusCode']) {
-                  Object.defineProperty(error, key, { value: res[key] });
-                }
-
-                throw error;
-              });
-            }
-          },
-          error => {
+            response => {
+          if (response.faultcode) {
             this.handleError({
-              message: error
+            message: response,
+          });
+          } else if (response.ok) {
+            this.draw({action: isMainPhoto ? 'photoRemoveMain' : 'photoRemove'});
+          } else if (response.status !== 200) {
+            return response.json().then(res=> {
+              const error = new Error(`HTTP ${response.status}`);
+
+              for(let key of ['detail', 'errors', 'statusCode'])
+                Object.defineProperty(error,key, {value:res[key]})
+              throw error
             });
           }
-        );
+            })
+            .catch(error => {
+              this.handleError({
+                message: error
+              });
+            });
       }
     },
     /**
